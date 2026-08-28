@@ -1,0 +1,18 @@
+# Imágenes de VM (superan el límite de 100MB de GitHub por archivo)
+# Ver laboratorio-metasploitable/README.md para volver a descargarlas/generarlas
+laboratorio-metasploitable/metasploitable-linux-2.0.0.zip
+laboratorio-metasploitable/metasploitable-linux-2.0.0/
+laboratorio-metasploitable/Metasploitable3/.vagrant/
+
+# Caso de Autopsy: archivos internos binarios de la herramienta (BD, cache, índice Solr).
+# El hallazgo ya está redactado en taller-metadata-forense/medatada.docx y medatada.pdf
+taller-metadata-forense/caso-autopsy-prueba1/
+
+# Basura de Windows / OneDrive / Office
+Thumbs.db
+desktop.ini
+~$*.doc*
+~$*.xls*
+~$*.ppt*
+*.tmp
+.DS_Store

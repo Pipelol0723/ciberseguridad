@@ -1,0 +1,62 @@
+========================================
+COMANDOS PARA CORRER EN LA VM UBUNTU
+(Laboratorio DMZ reducido - Kali/Ubuntu/Windows10)
+========================================
+
+--- PASO 1: Ver nombres reales de las interfaces ---
+ip a
+
+--- PASO 2: Ver las conexiones de red (NetworkManager) ---
+nmcli con show
+
+(Anota qué nombre de conexión, ej. "Wired connection 1", corresponde
+ a cada DEVICE, ej. enp0s3. El orden esperado:
+   NIC1 -> DMZ Externa       (hacia Kali)
+   NIC2 -> Zona Empresarial  (hacia Windows10)
+   NIC3 -> NAT               (salida a internet, para apt update)
+ Si los nombres de conexión no son "Wired connection 1/2/3",
+ reemplázalos en los comandos de abajo por los reales.)
+
+--- PASO 3: Configurar IP estática en NIC1 (DMZ Externa) ---
+sudo nmcli con mod "Wired connection 1" ipv4.method manual ipv4.addresses 192.168.50.1/24
+sudo nmcli con up "Wired connection 1"
+
+--- PASO 4: Configurar IP estática en NIC2 (Zona Empresarial) ---
+sudo nmcli con mod "Wired connection 2" ipv4.method manual ipv4.addresses 192.168.60.1/24
+sudo nmcli con up "Wired connection 2"
+
+--- PASO 5: Confirmar que NIC3 (NAT) sigue en DHCP normal ---
+sudo nmcli con mod "Wired connection 3" ipv4.method auto
+sudo nmcli con up "Wired connection 3"
+
+--- PASO 6: Verificar que las IPs quedaron bien asignadas ---
+ip a
+
+--- PASO 7: Habilitar reenvío de paquetes (IP forwarding) ---
+sudo sysctl -w net.ipv4.ip_forward=1
+echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
+
+--- PASO 8: Checkpoint - probar que Ubuntu ve a los dos lados ---
+ping -c 3 192.168.50.10   (debe responder: Kali, una vez que Kali tenga su IP configurada)
+ping -c 3 192.168.60.10   (debe responder: Windows10, una vez que tenga su IP configurada;
+                            puede fallar si el Firewall de Windows bloquea ICMP - normal)
+
+========================================
+LO SIGUIENTE ES PARA CUANDO TRABAJES LA
+SEGMENTACIÓN CON FIREWALL (no es necesario
+para el ping de esta noche, pero lo dejo listo)
+========================================
+
+--- PASO 9: Reglas de firewall (solo permitir Windows10 -> Kali puerto 80) ---
+sudo iptables -F FORWARD
+sudo iptables -P FORWARD DROP
+sudo iptables -A FORWARD -m state --state ESTABLISHED,RELATED -j ACCEPT
+sudo iptables -A FORWARD -p tcp -s 192.168.60.10 -d 192.168.50.10 --dport 80 -j ACCEPT
+
+--- PASO 10: Guardar las reglas para que sobrevivan un reinicio ---
+sudo apt install iptables-persistent -y
+sudo netfilter-persistent save
+
+(Nota: una vez aplicado el PASO 9, el ping directo Kali<->Windows10
+ dejará de funcionar a propósito -- eso es lo que demuestra la
+ segmentación. Solo quedará permitido el tráfico HTTP puerto 80.)
