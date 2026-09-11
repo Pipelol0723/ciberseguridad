@@ -1,0 +1,30 @@
+== wget -S http://www.example.net ==
+--2026-09-10 04:42:30--  http://www.example.net/
+Resolving www.example.net (www.example.net)... 10.5.1.10
+Connecting to www.example.net (www.example.net)|10.5.1.10|:80... connected.
+HTTP request sent, awaiting response... 
+  HTTP/1.1 200 OK
+  Date: Thu, 10 Sep 2026 02:42:29 GMT
+  Server: Apache/2.4.62 (Debian)
+  Last-Modified: Fri, 18 Jul 2025 14:42:24 GMT
+  ETag: "29cd-63a352258f3f9"
+  Accept-Ranges: bytes
+  Content-Length: 10701
+  Vary: Accept-Encoding
+  Keep-Alive: timeout=5, max=100
+  Connection: Keep-Alive
+  Content-Type: text/html
+Length: 10701 (10K) [text/html]
+Saving to: ‘/home/user1/parcial/p0/index_www.html’
+
+     0K ..........                                            100% 95.6M=0s
+
+2026-09-10 04:42:30 (95.6 MB/s) - ‘/home/user1/parcial/p0/index_www.html’ saved [10701/10701]
+
+
+== primeras lineas de la pagina ==
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />

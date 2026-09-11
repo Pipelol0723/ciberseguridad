@@ -1,0 +1,24 @@
+spawn sudo virsh console --force fw
+Connected to domain 'fw'
+Escape character is ^] (Ctrl + ])
+
+fw login: 
+fw login: root
+Password: 
+Linux fw 6.1.0-37-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.140-1 (2025-05-22) x86_64
+
+The programs included with the Debian GNU/Linux system are free software;
+the exact distribution terms for each program are described in the
+individual files in /usr/share/doc/*/copyright.
+
+Debian GNU/Linux comes with ABSOLUTELY NO WARRANTY, to the extent
+permitted by applicable law.
+Last login: Thu Sep 10 05:06:40 CEST 2026 on hvc0
+root@fw:~# iptables -t nat -S 2>&1
+-P PREROUTING ACCEPT
+-P INPUT ACCEPT
+-P OUTPUT ACCEPT
+-P POSTROUTING ACCEPT
+root@fw:~# exit
+logout
+

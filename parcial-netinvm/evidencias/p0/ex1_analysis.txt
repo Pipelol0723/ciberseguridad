@@ -1,0 +1,71 @@
+===== Punto 0 - Ejercicio 1: Captura HTTP en base (interfaz espejo mirror-dmz) =====
+-rw-r--r-- 1 tcpdump tcpdump 12398 Sep 10 04:42 /home/user1/parcial/pcaps/p0_http.pcap
+
+--- Resumen de paquetes (tcpdump -r) ---
+04:42:30.468508 IP 10.5.0.10.45740 > 10.5.1.10.80: Flags [S], seq 3911491747, win 64240, options [mss 1460,sackOK,TS val 293684113 ecr 0,nop,wscale 6], length 0
+04:42:30.469649 IP 10.5.1.10.80 > 10.5.0.10.45740: Flags [S.], seq 1830505986, ack 3911491748, win 65160, options [mss 1460,sackOK,TS val 3576541300 ecr 293684113,nop,wscale 6], length 0
+04:42:30.470940 IP 10.5.0.10.45740 > 10.5.1.10.80: Flags [.], ack 1, win 1004, options [nop,nop,TS val 293684115 ecr 3576541300], length 0
+04:42:30.471172 IP 10.5.0.10.45740 > 10.5.1.10.80: Flags [P.], seq 1:131, ack 1, win 1004, options [nop,nop,TS val 293684116 ecr 3576541300], length 130: HTTP: GET / HTTP/1.1
+04:42:30.471702 IP 10.5.1.10.80 > 10.5.0.10.45740: Flags [.], ack 131, win 1017, options [nop,nop,TS val 3576541302 ecr 293684116], length 0
+04:42:30.473749 IP 10.5.1.10.80 > 10.5.0.10.45740: Flags [P.], seq 1:7241, ack 131, win 1017, options [nop,nop,TS val 3576541305 ecr 293684116], length 7240: HTTP: HTTP/1.1 200 OK
+04:42:30.473802 IP 10.5.1.10.80 > 10.5.0.10.45740: Flags [P.], seq 7241:11013, ack 131, win 1017, options [nop,nop,TS val 3576541305 ecr 293684116], length 3772: HTTP
+04:42:30.474603 IP 10.5.0.10.45740 > 10.5.1.10.80: Flags [.], ack 7241, win 954, options [nop,nop,TS val 293684119 ecr 3576541305], length 0
+04:42:30.474624 IP 10.5.0.10.45740 > 10.5.1.10.80: Flags [.], ack 11013, win 918, options [nop,nop,TS val 293684119 ecr 3576541305], length 0
+04:42:30.475671 IP 10.5.0.10.45740 > 10.5.1.10.80: Flags [F.], seq 131, ack 11013, win 1002, options [nop,nop,TS val 293684120 ecr 3576541305], length 0
+04:42:30.476412 IP 10.5.1.10.80 > 10.5.0.10.45740: Flags [F.], seq 11013, ack 132, win 1017, options [nop,nop,TS val 3576541307 ecr 293684120], length 0
+04:42:30.477866 IP 10.5.0.10.45740 > 10.5.1.10.80: Flags [.], ack 11014, win 1002, options [nop,nop,TS val 293684122 ecr 3576541307], length 0
+04:42:35.664807 ARP, Request who-has 10.5.1.254 tell 10.5.1.10, length 28
+04:42:35.665384 ARP, Reply 10.5.1.254 is-at ca:fe:00:00:01:fe, length 28
+04:42:35.712455 ARP, Request who-has 10.5.1.10 tell 10.5.1.254, length 28
+04:42:35.712696 ARP, Reply 10.5.1.10 is-at ca:fe:00:00:01:0a, length 28
+
+--- HTTP request/response (tshark) ---
+4	10.5.0.10	10.5.1.10	GET	/		
+7	10.5.1.10	10.5.0.10			200	Apache/2.4.62 (Debian)
+
+--- Follow HTTP stream ---
+
+===================================================================
+Follow: tcp,ascii
+Filter: tcp.stream eq 0
+Node 0: 10.5.0.10:45740
+Node 1: 10.5.1.10:80
+130
+GET / HTTP/1.1
+Host: www.example.net
+User-Agent: Wget/1.21.3
+Accept: */*
+Accept-Encoding: identity
+Connection: Keep-Alive
+
+
+	7240
+HTTP/1.1 200 OK
+Date: Thu, 10 Sep 2026 02:42:29 GMT
+Server: Apache/2.4.62 (Debian)
+Last-Modified: Fri, 18 Jul 2025 14:42:24 GMT
+ETag: "29cd-63a352258f3f9"
+Accept-Ranges: bytes
+Content-Length: 10701
+Vary: Accept-Encoding
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+Content-Type: text/html
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Apache2 Debian Default Page: It works</title>
+    <style type="text/css" media="screen">
+  * {
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+  }
+
+  body, html {
+    padding: 3px 3px 3px 3px;
+
+    background-color: #D8DBE2;
+

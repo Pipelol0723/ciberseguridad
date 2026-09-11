@@ -1,0 +1,11 @@
+== DETECTOR: ventana de 12s sobre mirror-ext; ALERTA si (puertos distintos desde una misma IP) > 50 ==
+== Objetivo escaneado: dmza 10.5.1.10 desde exta 10.5.0.10 ==
+TECNICA          | SYN_desde_10.5.0.10 | puertos_distintos    | IPs_origen  | SYN_totales  | VEREDICTO
+T4_control       | 2001               | 1000                 | 2           | 2002         | DETECTADO
+T1_sneaky        | 0                  | 0                    | 1           | 1            | NO detectado (evade)
+T0_scandelay3s   | 1                  | 1                    | 2           | 2            | NO detectado (evade)
+maxparallel_1    | 95                 | 46                   | 2           | 96           | NO detectado (evade)
+decoys_RND10     | 2001               | 1000                 | 12          | 22012        | DETECTADO
+fragment_f       | 0                  | 0                    | 1           | 1            | NO detectado (evade)
+srcport_53       | 2001               | 1000                 | 2           | 2002         | DETECTADO
+== FIN ==

