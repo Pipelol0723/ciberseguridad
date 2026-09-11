@@ -1,0 +1,34 @@
+############ Punto 1 - Servicios DMZ (detalle -sV -sC) ############
+
+===== dmzb (10.5.1.11): descubrir puertos abiertos (-p-) =====
+Not shown: 65533 filtered tcp ports (no-response)
+PORT   STATE  SERVICE
+20/tcp closed ftp-data
+21/tcp open   ftp
+Nmap done: 1 IP address (1 host up) scanned in 43.89 seconds
+
+===== dmza (10.5.1.10): -sV -sC en 80,443 =====
+Starting Nmap 7.93 ( https://nmap.org ) at 2026-09-10 04:49 CEST
+Nmap scan report for dmza.example.net (10.5.1.10)
+Host is up (0.0014s latency).
+
+PORT    STATE  SERVICE VERSION
+80/tcp  open   http    Apache httpd 2.4.62 ((Debian))
+|_http-server-header: Apache/2.4.62 (Debian)
+|_http-title: Apache2 Debian Default Page: It works
+443/tcp closed https
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 11.57 seconds
+
+===== dmzb (10.5.1.11): -sV -sC en 21 (+FTP anon) =====
+Starting Nmap 7.93 ( https://nmap.org ) at 2026-09-10 04:50 CEST
+Nmap scan report for dmzb.example.net (10.5.1.11)
+Host is up (0.0014s latency).
+
+PORT   STATE SERVICE VERSION
+21/tcp open  ftp     vsftpd 3.0.3
+Service Info: OS: Unix
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 3.34 seconds

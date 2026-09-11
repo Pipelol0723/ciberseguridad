@@ -1,0 +1,26 @@
+############ Punto 3 - Pivoting desde dmza (10.5.1.10) hacia INT (10.5.2.0/24) ############
+
+===== Rutas e interfaces de dmza =====
+eth-0            UP             10.5.1.10/24 fe80::c8fe:ff:fe00:10a/64 
+-- route --
+default via 10.5.1.254 dev eth-0 
+10.5.1.0/24 dev eth-0 proto kernel scope link src 10.5.1.10 
+
+===== ping dmza -> INT =====
+10.5.2.10 PING-OK
+10.5.2.11 sin respuesta
+10.5.2.254 PING-OK
+
+===== TCP probes dmza -> INT (/dev/tcp) =====
+10.5.2.10:22 cerrado/filtrado
+10.5.2.10:80 cerrado/filtrado
+10.5.2.10:3306 cerrado/filtrado
+10.5.2.11:22 cerrado/filtrado
+10.5.2.254:22 cerrado/filtrado
+
+===== dmza -> fw (10.5.1.254:22) =====
+fw:22 no accesible desde DMZ
+
+===== base -> fw:22 (retry) y virsh fw =====
+fw:22 cerrado desde base
+ 1    fw     running

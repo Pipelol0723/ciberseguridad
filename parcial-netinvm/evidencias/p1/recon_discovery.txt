@@ -1,0 +1,68 @@
+############ Punto 1 - Reconocimiento desde EXT (exta 10.5.0.10) ############
+
+===== Descubrimiento hosts EXT (10.5.0.0/24) =====
+Nmap scan report for base.example.net (10.5.0.1)
+MAC Address: CA:FE:00:00:00:01 (Unknown)
+Nmap scan report for fw.example.net (10.5.0.254)
+MAC Address: CA:FE:00:00:00:FE (Unknown)
+Nmap scan report for exta.example.net (10.5.0.10)
+Nmap done: 256 IP addresses (3 hosts up) scanned in 1.88 seconds
+
+===== Descubrimiento hosts DMZ (10.5.1.0/24) con sondas a puertos publicados =====
+Nmap scan report for dmza.example.net (10.5.1.10)
+Nmap scan report for dmzb.example.net (10.5.1.11)
+Nmap done: 256 IP addresses (2 hosts up) scanned in 40.24 seconds
+
+===== Descubrimiento hosts INT (10.5.2.0/24) → esperado: nada (fw bloquea EXT→INT) =====
+Nmap done: 256 IP addresses (0 hosts up) scanned in 154.28 seconds
+
+===== INT alcanzable? nmap -Pn a inta (10.5.2.10) 22/80/443 =====
+PORT    STATE    SERVICE
+22/tcp  filtered ssh
+80/tcp  filtered http
+443/tcp filtered https
+Nmap done: 1 IP address (1 host up) scanned in 3.07 seconds
+
+===== Traceroute EXT→DMZ (dmza) =====
+traceroute to 10.5.1.10 (10.5.1.10), 30 hops max, 60 byte packets
+ 1  10.5.0.254  0.746 ms
+ 2  *
+ 3  *
+ 4  *
+ 5  *
+ 6  *
+ 7  *
+ 8  *
+ 9  *
+10  *
+11  *
+12  *
+13  *
+14  *
+15  *
+16  *
+17  *
+18  *
+19  *
+20  *
+21  *
+22  *
+23  *
+24  *
+25  *
+26  *
+27  *
+28  *
+29  *
+30  *
+
+===== Traceroute EXT→INT (inta) =====
+traceroute to 10.5.2.10 (10.5.2.10), 6 hops max, 60 byte packets
+ 1  10.5.0.254  0.519 ms
+ 2  *
+ 3  *
+ 4  *
+ 5  *
+ 6  *
+
+[exited with code 0]
