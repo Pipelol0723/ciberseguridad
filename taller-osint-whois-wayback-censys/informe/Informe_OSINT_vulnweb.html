@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Taller OSINT — Censys, Wayback Machine y WHOIS sobre vulnweb.com</title>
+<style>
+@page { size: letter; margin: 0.7in 0.62in 0.8in 0.62in;
+  @bottom-center { content: counter(page); font: 9pt "Times New Roman", serif; } }
+* { box-sizing: border-box; }
+body { font-family: "Times New Roman", Times, serif; font-size: 10pt; line-height: 1.2; color: #000; margin: 0; text-align: justify; hyphens: auto; }
+h1.title { font-size: 22pt; font-weight: normal; text-align: center; line-height: 1.1; margin: 0 0 10pt; }
+.authors { text-align: center; font-size: 10pt; line-height: 1.3; margin-bottom: 14pt; }
+.authors .name { font-size: 11pt; }
+.cols { column-count: 2; column-gap: 0.24in; }
+.abstract, .keywords { font-size: 9pt; font-weight: bold; margin-bottom: 6pt; text-indent: 0; }
+.abstract i, .keywords i { font-weight: bold; }
+h2 { font-size: 10pt; font-weight: normal; font-variant: small-caps; text-align: center; margin: 8pt 0 3pt; break-after: avoid; letter-spacing: .3pt; }
+h3 { font-size: 10pt; font-weight: normal; font-style: italic; margin: 6pt 0 3pt; break-after: avoid; }
+p { margin: 0 0 3pt; text-indent: 1.2em; }
+p.ni { text-indent: 0; text-align: left; }
+ul, ol { margin: 2pt 0 4pt; padding-left: 1.4em; }
+li { margin-bottom: 1.5pt; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 8.6pt; }
+figure { margin: 5pt 0 6pt; break-inside: avoid; }
+figure.wide { column-span: all; }
+figcaption { font-size: 8pt; margin-top: 3pt; text-align: justify; }
+.crop { overflow: hidden; border: .5pt solid #9aa; margin: 0 auto; }
+.crop img { display: block; max-width: none; }
+pre.term { background: #1b1d27; color: #e4e4e4; font: 6.4pt/1.28 Consolas, "DejaVu Sans Mono", monospace; padding: 5pt 6pt; margin: 0; border-radius: 3pt; white-space: pre-wrap; word-break: break-word; text-align: left; }
+pre.term .p { color: #4fb3ff; } pre.term .c { color: #fff; font-weight: bold; }
+pre.term .ok { color: #7ee787; } pre.term .w { color: #ffd166; } pre.term .r { color: #ff7b72; } pre.term .d { color: #8b93a7; }
+table { border-collapse: collapse; width: 100%; font-size: 7.8pt; line-height: 1.15; margin: 4pt 0 8pt; }
+table caption { font-size: 8pt; font-variant: small-caps; text-align: center; margin-bottom: 3pt; line-height: 1.25; }
+th, td { border-top: .6pt solid #000; border-bottom: .6pt solid #000; padding: 2pt 3pt; text-align: left; vertical-align: top; }
+th { font-weight: bold; }
+.keep { display: inline-block; width: 100%; }
+.wide-table { column-span: all; }
+.refs { font-size: 8pt; line-height: 1.2; text-align: left; }
+.refs ol { padding-left: 2.2em; margin: 0; }
+.refs li { margin-bottom: 2pt; break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<h1 class="title">Reconocimiento pasivo del dominio vulnweb.com con Censys, Wayback Machine y WHOIS</h1>
+<div class="authors">
+  <span class="name">Andrés Felipe Céspedes Rondón</span><br>
+  Ciberseguridad 2026 G01 — Ciencias de la Computación e Inteligencia Artificial<br>
+  Universidad Sergio Arboleda, Bogotá, Colombia<br>
+  Docente: MSc. Iván Darío Méndez Aguilera — Octubre de 2026
+</div>
+
+<div class="cols">
+
+<p class="abstract"><i>Resumen</i>—Este informe documenta un reconocimiento pasivo (OSINT) sobre <i>vulnweb.com</i>, el dominio con el que Acunetix/Invicti publica aplicaciones web vulnerables a propósito para probar escáneres. Se hicieron seis búsquedas en Censys sobre certificados, puertos, servicios, versiones de software, geolocalización y proveedor de red. Se recuperaron cuatro versiones históricas del sitio en Wayback Machine (2012, 2016, 2020 y 2026) y se ejecutaron cinco variantes del comando <i>whois</i>, además de un <i>whois</i> de la IP y consultas DNS. El dominio, registrado en 2010 con Gandi a nombre de Invicti Security Limited (Malta), se aloja en tres IP de Amazon Web Services en Oregón y Virginia. Sus servicios solo atienden HTTP en el puerto 80, sin TLS, con software sin soporte (IIS 8.5 y PHP 7.1.26) y una página <i>phpinfo()</i> expuesta. Todo se obtuvo sin enviar tráfico de ataque al objetivo.</p>
+
+<p class="keywords"><i>Palabras clave</i>—OSINT, reconocimiento pasivo, Censys, Wayback Machine, WHOIS, DNS, vulnweb.com, huella digital.</p>
+
+<h2>I. Introducción</h2>
+<p>El reconocimiento es la primera fase de una evaluación de seguridad. Su variante pasiva, el OSINT (<i>Open Source Intelligence</i>), reúne información de fuentes públicas (motores que escanean Internet, archivos históricos y registros de dominios) sin interactuar de forma intrusiva con el objetivo, así que el dueño del sistema difícilmente la detecta.</p>
+<p>La consigna pedía un dominio que presentara posibles vulnerabilidades. Se eligió <i>vulnweb.com</i> porque cumple esa condición de forma legítima: sus subdominios (<i>testphp</i>, <i>testasp</i>, <i>testaspnet</i>, <i>testhtml5</i> y <i>rest</i>) son aplicaciones vulnerables a propósito que el fabricante publica para que se practique sobre ellas [8]. Así el análisis puede nombrar debilidades concretas sin afectar a una organización real.</p>
+<p>Los objetivos fueron: (1) caracterizar la superficie expuesta con seis búsquedas en Censys; (2) comparar al menos cuatro versiones históricas del sitio en Wayback Machine; y (3) contrastar los datos de registro con cinco variantes de <i>whois</i>.</p>
+
+<h2>II. Metodología y herramientas</h2>
+<ul>
+  <li><b>Censys Platform</b> [1], con una cuenta gratuita. Sin cuenta solo se permiten tres búsquedas al día, y el historial de servicios requiere un plan de pago.</li>
+  <li><b>Wayback Machine</b> [3]: se navegó por las capturas y se usó su API CDX [4] para listar una captura por año con su tamaño.</li>
+  <li><b>whois</b> 5.6.6 y <b>dig</b> en Kali Linux (contenedor <code>kalilinux/kali-rolling</code>), ejecutados el 29 de octubre de 2026.</li>
+</ul>
+<p>Como punto de partida, el DNS resuelve <i>vulnweb.com</i>, <i>www</i>, <i>testphp</i> y <i>testhtml5</i> a <b>44.228.249.3</b>; <i>testasp</i> y <i>testaspnet</i> a <b>44.238.29.244</b>; y <i>rest</i> a <b>18.215.71.186</b>. Los cuatro servidores de nombres son de Amazon Route 53 y el correo (MX) lo maneja Google (Fig. 1). Esas tres IP sirvieron de pivote para Censys.</p>
+<figure>
+<pre class="term"><span class="p">┌──(root㉿kali)-[~]</span>
+<span class="p">└─#</span> <span class="c">dig +short vulnweb.com A; dig +short vulnweb.com NS; dig +short testphp.vulnweb.com A; dig +short vulnweb.com MX</span>
+<span class="ok">44.228.249.3</span>
+ns-1588.awsdns-06.co.uk.
+ns-557.awsdns-05.net.
+ns-136.awsdns-17.com.
+ns-1450.awsdns-53.org.
+<span class="ok">44.228.249.3</span>
+10 alt1.aspmx.l.google.com.   ...
+10 aspmx.l.google.com.</pre>
+<figcaption>Fig. 1. Resolución DNS del dominio: registro A, servidores de nombres de AWS y correo de Google.</figcaption>
+</figure>
+
+<h2>III. Reconocimiento con Censys</h2>
+<h3>A. Búsqueda 1: certificados digitales</h3>
+<p class="ni">Consulta: <code>cert.names: "vulnweb.com"</code></p>
+<p>Censys devolvió 3 certificados y ninguno es un certificado real de <i>vulnweb.com</i> (Fig. 2). Los tres los emitió <b>MockServer</b> (<i>CN=www.mockserver.com, O=MockServer, L=London</i>), una herramienta de pruebas que actúa como proxy y genera certificados al vuelo. Censys los marca como <i>never-trusted</i> y <i>untrusted</i>. Dos tienen una vigencia absurda, del 14 de julio de 2022 al 20 de junio de 2123, y el tercero (9-oct-2024 a 14-oct-2025) ya expiró. Su lista de nombres (SAN) mezcla direcciones y dominios ajenos, como 1.1.1.1, 127.0.0.1 o api.ipify.org, junto a <i>testphp.vulnweb.com</i>. Lo más probable es que alguien haya visitado <i>testphp</i> a través de un MockServer y el certificado generado haya quedado indexado.</p>
+<p>La conclusión práctica es que <b>no hay un certificado de una CA confiable para el dominio</b>, lo que coincide con que sus sitios solo responden por HTTP (búsqueda 2).</p>
+
+<figure class="wide">
+<div class="crop" style="aspect-ratio: 1100 / 450;"><img src="../evidencias/censys/01_certificados.jpg" style="width:138.36%; margin-left:-36.36%; margin-top:-8.64%;" alt="Certificados en Censys"></div>
+<figcaption>Fig. 2. Búsqueda 1 en Censys: certificados con <i>testphp.vulnweb.com</i> en sus nombres. El emisor es MockServer y el navegador no confía en ninguno (captura recortada; la completa está en <i>evidencias/censys/01_certificados.jpg</i>).</figcaption>
+</figure>
+
+<h3>B. Búsqueda 2: puertos abiertos</h3>
+<p class="ni">Consulta: <code>host.dns.names: "vulnweb.com"</code></p>
+<p>La búsqueda devolvió 2 hosts (Fig. 3). Según los filtros de la izquierda, los dos tienen <b>un único puerto abierto, el 80/TCP con HTTP</b>; ninguno ofrece 443 (HTTPS). El tercer servidor, 44.228.249.3, que aloja la portada, <i>testphp</i> y <i>testhtml5</i>, no aparece en los resultados: al consultarlo directamente, Censys muestra 0 servicios y avisa que el host no tiene servicios visibles o está en su lista de bloqueo (Fig. 7). Ese vacío es en sí un dato, porque la fuente no cubre todo el objetivo y otra herramienta tendría que confirmarlo.</p>
+
+<figure class="wide">
+<div class="crop" style="aspect-ratio: 1335 / 720; width: 88%;"><img src="../evidencias/censys/02_busqueda_hosts_puertos.jpg" style="width:114.16%; margin-left:-12.36%; margin-top:-4.49%;" alt="Búsqueda de hosts en Censys"></div>
+<figcaption>Fig. 3. Búsqueda 2 en Censys: 2 hosts asociados a <i>vulnweb.com</i>, ambos solo con el puerto 80 (filtro <i>Ports</i>). Los filtros también resumen fabricantes (Microsoft, Apache, PHP), redes (AMAZON-02 y AMAZON-AES) y ubicación (Estados Unidos).</figcaption>
+</figure>
+
+<h3>C. Búsqueda 3: servicios expuestos</h3>
+<p>Al abrir cada host aparece el detalle del servicio HTTP (Fig. 4 y Fig. 5):</p>
+<ul>
+  <li><b>44.238.29.244</b> (<i>testasp</i>): Censys lo etiqueta <i>DEFAULT_LANDING_PAGE</i>. Pedido por IP responde la página por defecto de IIS (“IIS Windows Server”), así que el sitio de prueba solo aparece cuando se usa el nombre de host. El sistema operativo detectado es Microsoft Windows.</li>
+  <li><b>18.215.71.186</b> (<i>rest</i>): etiquetas <i>WEB_TECHNOLOGY</i> y <i>WEB_UI</i>, con el título “Invicti Vulnerable REST API”. Además de la raíz, Censys indexó la ruta <b>/info.php</b>, que responde 200 con una página <i>phpinfo()</i> completa (Fig. 6). El sistema operativo detectado es Debian Linux.</li>
+</ul>
+
+<figure class="wide">
+<div class="crop" style="aspect-ratio: 1330 / 610; width: 92%;"><img src="../evidencias/censys/03_servicio_testasp_iis.jpg" style="width:114.59%; margin-left:-13.53%; margin-top:-3.38%;" alt="Host 44.238.29.244 en Censys"></div>
+<figcaption>Fig. 4. Búsquedas 3 y 4: host 44.238.29.244 (<i>testasp.vulnweb.com</i>). Un solo servicio HTTP en el 80, software Microsoft IIS con ASP.NET, cabecera <i>Server: Microsoft-IIS/8.5</i> y página por defecto de IIS.</figcaption>
+</figure>
+
+<figure class="wide">
+<div class="crop" style="aspect-ratio: 1320 / 560; width: 92%;"><img src="../evidencias/censys/04_versiones_rest_apache_php.jpg" style="width:115.45%; margin-left:-13.64%; margin-top:-3.41%;" alt="Host 18.215.71.186 en Censys"></div>
+<figcaption>Fig. 5. Búsquedas 3 a 6: host 18.215.71.186 (<i>rest.vulnweb.com</i>). Las cabeceras revelan <i>Apache/2.4.25 (Debian)</i> y <i>X-Powered-By: PHP/7.1.26</i>. A la derecha, la red AS14618 (Amazon) y la ubicación en Ashburn, Virginia.</figcaption>
+</figure>
+
+<h3>D. Búsqueda 4: versiones de software</h3>
+<p>Las cabeceras HTTP indexadas por Censys revelan versiones exactas (Fig. 4 y Fig. 5):</p>
+<ul>
+  <li><b>Microsoft-IIS/8.5</b> con <b>ASP.NET</b>: IIS 8.5 viene con Windows Server 2012 R2, que dejó de recibir soporte el 10 de octubre de 2023 [9]. La cabecera <i>Last-Modified</i> indica que la página por defecto no cambia desde noviembre de 2020.</li>
+  <li><b>Apache/2.4.25 (Debian)</b> y <b>PHP/7.1.26</b>: la rama PHP 7.1 dejó de recibir parches el 1 de diciembre de 2019 [10]. Apache 2.4.25 es de diciembre de 2016, y su rango de versiones aparece entre las afectadas por fallas como CVE-2017-9798 (<i>Optionsbleed</i>) y CVE-2019-0211 [11]. Debian aplica parches sin cambiar el número de versión, así que esto indica posibles vulnerabilidades pero no prueba que el servidor lo sea; la pestaña <i>CVEs</i> de Censys no reporta ninguna.</li>
+  <li>El <i>phpinfo()</i> de <i>/info.php</i> añade detalles internos: OpenSSL 1.0.2q, la ruta <i>/var/www/public</i>, un nombre de host interno (<i>rest.testsparker.com</i>, de cuando Invicti se llamaba Netsparker) y un archivo <i>Shark.php</i> que se antepone a cada script, consistente con el sensor IAST que distribuye Invicti.</li>
+</ul>
+
+<figure class="wide">
+<div class="crop" style="aspect-ratio: 1320 / 190; width: 92%;"><img src="../evidencias/censys/06_rest_infophp_ashburn.jpg" style="width:115.45%; margin-left:-13.64%; margin-top:-43.94%;" alt="info.php en Censys"></div>
+<figcaption>Fig. 6. Censys indexó <i>http://18.215.71.186/info.php</i> con el título <i>phpinfo()</i>: una página de diagnóstico expuesta públicamente.</figcaption>
+</figure>
+
+<h3>E. Búsqueda 5: geolocalización de la IP</h3>
+<p>Censys ubica 44.228.249.3 y 44.238.29.244 en <b>Boardman, Oregón</b> (45,84° N, −119,70° O), y 18.215.71.186 en <b>Ashburn, Virginia</b> (39,04° N, −77,49° O). Más que ciudades donde esté la empresa, son las regiones de AWS <i>us-west-2</i> y <i>us-east-1</i>, como confirma el DNS inverso (<i>ec2-…us-west-2.compute.amazonaws.com</i> y <i>…compute-1.amazonaws.com</i>). El registrante, en cambio, está en Malta (sección V).</p>
+
+<figure class="wide">
+<div class="crop" style="aspect-ratio: 1357 / 265; width: 92%;"><img src="../evidencias/censys/05_host_44.228.249.3_sin_servicios.jpg" style="width:112.16%; margin-left:-12.16%; margin-top:-4.42%;" alt="Host 44.228.249.3 en Censys"></div>
+<figcaption>Fig. 7. Búsquedas 5 y 6: host 44.228.249.3. DNS directo hacia <i>vulnweb.com</i>, <i>testphp</i> y <i>testhtml5</i>; AS16509 (AMAZON-02), prefijo 44.224.0.0/11; ubicación en Boardman, Oregón. Censys no registra servicios para esta IP.</figcaption>
+</figure>
+
+<h3>F. Búsqueda 6: proveedor de red</h3>
+<p>Las tres IP pertenecen a Amazon: 44.228.249.3 y 44.238.29.244 al sistema autónomo <b>AS16509 (AMAZON-02)</b>, prefijo 44.224.0.0/11, y 18.215.71.186 al <b>AS14618 (AMAZON-AES)</b>, prefijo 18.208.0.0/13. En el DNS directo de esas IP también aparecen dominios ajenos (<i>pt-labs.cloud</i>, <i>xsec.bbroot.com</i>, <i>wp.ducksifiedshop.com</i>, <i>test.yiache.people.aws.dev</i>). Son registros de terceros que apuntan a las mismas direcciones, algo frecuente con IP de nube que se reasignan, y muestran que una IP no basta para atribuir un servicio a un dueño.</p>
+
+<h2>IV. Análisis histórico con Wayback Machine</h2>
+<p>Wayback Machine guarda <b>511 capturas</b> de <i>http://vulnweb.com/</i>, del 21 de octubre de 2012 al 11 de marzo de 2026. Con la API CDX se listó una captura por año y se eligieron cuatro que marcan etapas distintas (Tabla I).</p>
+
+<h3>A. 21 de octubre de 2012: un WordPress sin configurar</h3>
+<p>La primera captura no tiene nada que ver con Acunetix: es una instalación de WordPress recién creada, con el tema por defecto, el lema “Just another WordPress site”, la entrada de ejemplo “Hello world!” del 24 de septiembre de 2012 y el enlace <i>Log in</i> visible (Fig. 8). Para un atacante de esa época, era un CMS sin actualizar con el panel de acceso a la vista.</p>
+<figure>
+<div class="crop" style="aspect-ratio: 600 / 440;"><img src="../evidencias/wayback/2012-10-21.jpg" style="width:253.67%; margin-left:-76.67%; margin-top:-6.67%;" alt="vulnweb.com en 2012"></div>
+<figcaption>Fig. 8. <i>vulnweb.com</i> el 21-oct-2012: WordPress por defecto.</figcaption>
+</figure>
+
+<h3>B. 2 de enero de 2016: portal de sitios de prueba</h3>
+<p>El dominio ya es el índice de “sitios web de prueba vulnerables” para el escáner de Acunetix. Es una página de HTML plano de menos de 1&nbsp;KB, con una tabla de cuatro sitios y la <b>tecnología de cada uno</b>: SecurityTweets (<i>testhtml5</i>: nginx, Python, Flask, CouchDB), Acuart (<i>testphp</i>: Apache, PHP, MySQL), Acuforum (<i>testasp</i>: IIS, ASP, SQL Server) y Acublog (<i>testaspnet</i>: IIS, ASP.NET, SQL Server) (Fig. 9). El propio dueño publica la pila tecnológica, que normalmente es lo primero que un atacante intenta averiguar.</p>
+<figure>
+<div class="crop" style="aspect-ratio: 400 / 235;"><img src="../evidencias/wayback/2016-01-02.jpg" style="width:380.5%; margin-left:-140%; margin-top:-12.5%;" alt="vulnweb.com en 2016"></div>
+<figcaption>Fig. 9. <i>vulnweb.com</i> el 02-ene-2016: tabla de cuatro sitios con sus tecnologías.</figcaption>
+</figure>
+
+<h3>C. 7 de enero de 2020: recursos y advertencia</h3>
+<p>Se agrega una columna <i>Resources</i>, con enlaces a la revisión del escáner correspondiente, y una franja gris con una advertencia: los sitios son intencionalmente vulnerables y sirven para aprender sobre inyección SQL, XSS o CSRF (Fig. 10). La página pasa de unos 900 a unos 1&nbsp;600 bytes.</p>
+<figure>
+<div class="crop" style="aspect-ratio: 920 / 310;"><img src="../evidencias/wayback/2020-01-07.jpg" style="width:165.43%; margin-left:-32.61%; margin-top:-5.43%;" alt="vulnweb.com en 2020"></div>
+<figcaption>Fig. 10. <i>vulnweb.com</i> el 07-ene-2020: columna de recursos y advertencia.</figcaption>
+</figure>
+
+<h3>D. 16 de enero de 2026: la API REST</h3>
+<p>La estructura se mantiene, pero aparece una quinta fila, <b>REST API</b> (<i>rest.vulnweb.com</i>: Apache, PHP, MySQL), que es justamente el host 18.215.71.186 de Censys (Fig. 11). La superficie de ataque del dominio creció de cuatro sitios a cinco, ahora también con una API.</p>
+<figure>
+<div class="crop" style="aspect-ratio: 920 / 340;"><img src="../evidencias/wayback/2026-01-16.jpg" style="width:165.43%; margin-left:-32.61%; margin-top:-5.43%;" alt="vulnweb.com en 2026"></div>
+<figcaption>Fig. 11. <i>vulnweb.com</i> el 16-ene-2026: se suma <i>rest.vulnweb.com</i>.</figcaption>
+</figure>
+
+<div class="keep"><table>
+<caption>Tabla I<br>Evolución de vulnweb.com en Wayback Machine</caption>
+<tr><th style="width:17%">Fecha</th><th style="width:13%">Tamaño</th><th>Estructura y contenido</th></tr>
+<tr><td>21-oct-2012</td><td>2 498 B</td><td>WordPress por defecto, sin relación con Acunetix; login visible.</td></tr>
+<tr><td>02-ene-2016</td><td>897 B</td><td>Índice en HTML plano de 4 sitios de prueba con sus tecnologías.</td></tr>
+<tr><td>07-ene-2020</td><td>1 599 B</td><td>Columna de recursos y advertencia de sitios vulnerables.</td></tr>
+<tr><td>16-ene-2026</td><td>1 817 B</td><td>Quinto sitio: API REST (Apache, PHP, MySQL).</td></tr>
+</table></div>
+<p>En síntesis, el dominio pasó de un blog genérico a un catálogo de objetivos de práctica, y desde 2016 mantiene el mismo diseño mínimo. El historial también sirve para atribuir: el WordPress de 2012 muestra que el dominio tuvo otro uso antes del actual, y la tabla de tecnologías permite saber qué esperar de cada subdominio sin enviarle ni una petición.</p>
+
+<h2>V. Consultas WHOIS</h2>
+<p>Se ejecutaron cinco variantes de <i>whois</i> (protocolo del RFC 3912 [5], puerto 43/TCP), siguiendo los ejemplos del enunciado [6].</p>
+
+<h3>A. Variante 1: consulta estándar</h3>
+<p class="ni"><code>whois vulnweb.com</code> (137 líneas)</p>
+<p>Para un <i>.com</i>, el cliente consulta primero al registro (Verisign) y luego sigue la referencia al servidor del registrador, Gandi, de modo que la salida trae los dos registros. Del registro se obtiene la información técnica y del registrador los datos del titular: <b>Invicti Security Limited</b>, país <b>MT</b> (Malta). El resto de los datos personales aparece como <i>REDACTED FOR PRIVACY</i> y el correo es un alias de Gandi (Fig. 12).</p>
+<figure>
+<pre class="term"><span class="p">┌──(root㉿kali)-[~]</span>
+<span class="p">└─#</span> <span class="c">whois vulnweb.com</span>
+   Domain Name: VULNWEB.COM
+   Registrar: Gandi SAS             Registrar IANA ID: 81
+   Updated Date: 2026-06-01T05:28:12Z
+   <span class="ok">Creation Date: 2010-06-14T07:50:29Z</span>
+   <span class="ok">Registry Expiry Date: 2027-06-14T07:50:29Z</span>
+   Domain Status: clientTransferProhibited
+   Name Server: NS-136.AWSDNS-17.COM   NS-1450.AWSDNS-53.ORG
+   Name Server: NS-1588.AWSDNS-06.CO.UK  NS-557.AWSDNS-05.NET
+   <span class="r">DNSSEC: unsigned</span>
+<span class="d">   ... (registrador: whois.gandi.net) ...</span>
+Registrant Name: REDACTED FOR PRIVACY
+<span class="w">Registrant Organization: Invicti Security Limited
+Registrant Country: MT</span>
+Registrant Email: e7c92ba2...@contact.gandi.net</pre>
+<figcaption>Fig. 12. Variante 1, salida resumida (algunos campos se agruparon en una misma línea para ahorrar espacio).</figcaption>
+</figure>
+
+<h3>B. Variante 2: sin avisos legales (-H)</h3>
+<p class="ni"><code>whois -H vulnweb.com</code> (107 líneas)</p>
+<p>Devuelve los mismos datos pero omite el bloque <i>TERMS OF USE</i> de Verisign, 30 líneas menos. Es la opción práctica para guardar o procesar la salida.</p>
+
+<h3>C. Variante 3: servidor del registro (-h)</h3>
+<p class="ni"><code>whois -h whois.verisign-grs.com vulnweb.com</code> (57 líneas)</p>
+<p>Al fijar el servidor, el cliente ya no sigue la referencia al registrador. La respuesta es el registro “delgado” de Verisign: fechas, estado, servidores DNS y DNSSEC, pero <b>ningún dato del titular</b> (Fig. 13).</p>
+<figure>
+<pre class="term"><span class="p">┌──(root㉿kali)-[~]</span>
+<span class="p">└─#</span> <span class="c">whois -h whois.verisign-grs.com vulnweb.com</span>
+   Domain Name: VULNWEB.COM
+   Registry Domain ID: 1602006391_DOMAIN_COM-VRSN
+   Registrar WHOIS Server: whois.gandi.net
+   Creation Date: 2010-06-14T07:50:29Z
+   Registrar: Gandi SAS
+   Domain Status: clientTransferProhibited
+   DNSSEC: unsigned
+<span class="d">   (sin campos Registrant / Admin / Tech)</span></pre>
+<figcaption>Fig. 13. Variante 3: solo el registro de Verisign (resumida).</figcaption>
+</figure>
+
+<h3>D. Variante 4: puerto explícito (-p 43)</h3>
+<p class="ni"><code>whois -p 43 vulnweb.com</code> (137 líneas)</p>
+<p>La salida es idéntica, línea por línea, a la de la variante 1, porque 43 ya es el puerto por defecto del protocolo. La opción sirve cuando un servidor WHOIS atiende en otro puerto.</p>
+
+<h3>E. Variante 5: modo detallado (--verbose)</h3>
+<p class="ni"><code>whois --verbose vulnweb.com</code> (141 líneas)</p>
+<p>Agrega las líneas que muestran la cadena de consultas: primero <i>Using server whois.verisign-grs.com</i> y, tras el registro, <i>Using server whois.gandi.net</i> con la cadena enviada (Fig. 14). Así se ve de dónde sale cada dato.</p>
+<figure>
+<pre class="term"><span class="p">┌──(root㉿kali)-[~]</span>
+<span class="p">└─#</span> <span class="c">whois --verbose vulnweb.com</span>
+<span class="w">Using server whois.verisign-grs.com.</span>
+   Domain Name: VULNWEB.COM
+<span class="d">   ...</span>
+<span class="w">Using server whois.gandi.net.
+Query string: "vulnweb.com"</span>
+Domain Name: vulnweb.com
+Registrar WHOIS Server: whois.gandi.net</pre>
+<figcaption>Fig. 14. Variante 5: el modo detallado revela la referencia de Verisign a Gandi.</figcaption>
+</figure>
+
+<h3>F. Complemento: WHOIS de la IP</h3>
+<p>El <i>whois</i> de 44.228.249.3 responde ARIN. La IP está en el bloque 44.192.0.0/10 (AMAZO-4), del que se subasignó 44.224.0.0/11 (AMAZO-ZPDX), ambos de <b>Amazon.com, Inc.</b> (Seattle) y con un comentario que remite a EC2. Esto coincide con el sistema autónomo que reportó Censys.</p>
+
+<div class="keep"><table>
+<caption>Tabla II<br>Datos de registro de vulnweb.com</caption>
+<tr><th style="width:30%">Campo</th><th>Valor e implicación</th></tr>
+<tr><td>Creación / expiración</td><td>14-jun-2010 / 14-jun-2027: dominio con 16 años de antigüedad y vigente.</td></tr>
+<tr><td>Última actualización</td><td>01-jun-2026 (registro) y 14-oct-2026 (registrador).</td></tr>
+<tr><td>Registrador</td><td>Gandi SAS (IANA 81), Francia.</td></tr>
+<tr><td>Titular</td><td>Invicti Security Limited, Malta; el resto está oculto por privacidad.</td></tr>
+<tr><td>Estado</td><td><i>clientTransferProhibited</i>: bloqueo contra transferencias no autorizadas [7].</td></tr>
+<tr><td>DNS</td><td>4 servidores de AWS Route 53 en cuatro TLD distintos (redundancia).</td></tr>
+<tr><td>DNSSEC</td><td><b>unsigned</b>: las respuestas DNS no están firmadas.</td></tr>
+<tr><td>Hosting</td><td>Amazon EC2 (AS16509 y AS14618); correo en Google.</td></tr>
+</table></div>
+<p>Un detalle: el registrador anota la creación a las 05:50:29 y el registro a las 07:50:29 del mismo día. Es una diferencia de dos horas, seguramente de zona horaria, que muestra por qué conviene contrastar fuentes antes de citar una fecha exacta.</p>
+
+<h2>VI. Posibles vulnerabilidades identificadas</h2>
+<p>Cruzando las tres fuentes, y aclarando que en este dominio son debilidades intencionales, se identifican:</p>
+<ul>
+  <li><b>Tráfico sin cifrar:</b> todos los servicios atienden solo HTTP en el puerto 80 y no hay un certificado confiable. Las credenciales y cookies de los sitios viajan en claro.</li>
+  <li><b>Software sin soporte:</b> IIS 8.5 sobre Windows Server 2012 R2 y PHP 7.1.26 ya no reciben parches; Apache 2.4.25 pertenece a un rango afectado por CVE públicos.</li>
+  <li><b>Fuga de información:</b> <i>/info.php</i> expone la configuración de PHP; las cabeceras <i>Server</i> y <i>X-Powered-By</i> anuncian versiones; y la portada lista la tecnología de cada sitio.</li>
+  <li><b>Configuración por defecto:</b> la página de bienvenida de IIS responde en la IP de <i>testasp</i>.</li>
+  <li><b>DNS sin DNSSEC:</b> un atacante en la ruta podría intentar envenenar la caché del resolver de una víctima y suplantar los nombres del dominio.</li>
+</ul>
+<p>En un dominio de producción, cada punto sería un hallazgo para el informe: activar HTTPS con HSTS, actualizar o migrar los servidores, eliminar <i>phpinfo()</i>, ocultar las cabeceras de versión, quitar las páginas por defecto y firmar la zona con DNSSEC.</p>
+
+<h2>VII. Conclusiones</h2>
+<ul>
+  <li><b>Las fuentes se complementan.</b> WHOIS dice quién es el titular y dónde se registra el dominio, Censys qué está expuesto y con qué versión, y Wayback cómo llegó el sitio a su estado actual. Las tres coinciden en la infraestructura: DNS de Route 53, IP de AWS y bloques de Amazon en ARIN.</li>
+  <li><b>Ninguna fuente es completa.</b> Censys no tiene servicios indexados para la IP principal (44.228.249.3) y limita el historial a cuentas de pago, y WHOIS oculta los datos personales. Para cubrir esos vacíos hay que contrastar.</li>
+  <li><b>El historial también es inteligencia.</b> La captura de 2012 revela un uso anterior del dominio, y la tabla de tecnologías de 2016 en adelante entrega la huella técnica sin tocar un solo servidor.</li>
+  <li><b>Se pueden identificar posibles vulnerabilidades sin escanear:</b> versiones sin soporte, un <i>phpinfo()</i> expuesto, ausencia de TLS y DNSSEC. El escaneo activo, con autorización, solo tendría que confirmarlas.</li>
+</ul>
+
+<h2>Referencias</h2>
+<div class="refs"><ol>
+<li>Censys, “Censys Platform.” [En línea]. Disponible: https://platform.censys.io</li>
+<li>Censys, “Censys Query Language (CenQL).” [En línea]. Disponible: https://docs.censys.com/</li>
+<li>Internet Archive, “Wayback Machine.” [En línea]. Disponible: https://web.archive.org</li>
+<li>Internet Archive, “Wayback CDX Server API,” GitHub. [En línea]. Disponible: https://github.com/internetarchive/wayback/tree/master/wayback-cdx-server</li>
+<li>L. Daigle, “WHOIS protocol specification,” RFC 3912, IETF, sep. 2004.</li>
+<li>GeeksforGeeks, “How to use the whois command on Ubuntu Linux.” [En línea]. Disponible: https://www.geeksforgeeks.org/linux-unix/how-to-use-the-whois-command-on-ubuntu-linux/</li>
+<li>ICANN, “EPP status codes: what do they mean, and why should I know?” [En línea]. Disponible: https://icann.org/epp</li>
+<li>Acunetix, “Vulnerable test websites for Acunetix Web Vulnerability Scanner.” [En línea]. Disponible: http://vulnweb.com/</li>
+<li>Microsoft, “Windows Server 2012 R2 – Microsoft Lifecycle.” [En línea]. Disponible: https://learn.microsoft.com/lifecycle/products/windows-server-2012-r2</li>
+<li>The PHP Group, “Unsupported branches.” [En línea]. Disponible: https://www.php.net/eol.php</li>
+<li>Apache Software Foundation, “Apache HTTP Server 2.4 vulnerabilities.” [En línea]. Disponible: https://httpd.apache.org/security/vulnerabilities_24.html</li>
+<li>ARIN, “Search ARIN WHOIS/RDAP.” [En línea]. Disponible: https://search.arin.net</li>
+</ol></div>
+
+</div>
+</body>
+</html>

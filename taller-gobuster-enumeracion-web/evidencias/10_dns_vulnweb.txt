@@ -1,0 +1,20 @@
+┌──(root㉿kali)-[~]
+└─# gobuster dns --domain vulnweb.com -w /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt --resolver 1.1.1.1:53 --timeout 5s -t 4 --np
+===============================================================
+Gobuster v3.8.2
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Domain:     vulnweb.com
+[+] Threads:    4
+[+] Resolver:   1.1.1.1:53
+[+] Timeout:    5s
+[+] Wordlist:   /usr/share/seclists/Discovery/DNS/subdomains-top1million-5000.txt
+===============================================================
+Starting gobuster in DNS enumeration mode
+===============================================================
+localhost.vulnweb.com 127.0.0.1
+www.vulnweb.com 44.228.249.3
+rest.vulnweb.com 18.215.71.186
+===============================================================
+Finished
+===============================================================

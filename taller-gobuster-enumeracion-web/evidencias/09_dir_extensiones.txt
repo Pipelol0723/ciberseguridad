@@ -1,0 +1,45 @@
+┌──(root㉿kali)-[~]
+└─# gobuster dir -u http://192.168.18.128 -w /usr/share/seclists/Discovery/Web-Content/common.txt -x php,txt,html -t 20 --np
+===============================================================
+Gobuster v3.8.2
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://192.168.18.128
+[+] Method:                  GET
+[+] Threads:                 20
+[+] Wordlist:                /usr/share/seclists/Discovery/Web-Content/common.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.8.2
+[+] Extensions:              php,txt,html
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+.hta                 (Status: 403) [Size: 291]
+.htaccess            (Status: 403) [Size: 296]
+.hta.txt             (Status: 403) [Size: 295]
+.htaccess.txt        (Status: 403) [Size: 300]
+.hta.html            (Status: 403) [Size: 296]
+.htaccess.html       (Status: 403) [Size: 301]
+.htpasswd.php        (Status: 403) [Size: 300]
+.htaccess.php        (Status: 403) [Size: 300]
+.htpasswd            (Status: 403) [Size: 296]
+.hta.php             (Status: 403) [Size: 295]
+.htpasswd.html       (Status: 403) [Size: 301]
+.htpasswd.txt        (Status: 403) [Size: 300]
+cgi-bin/             (Status: 403) [Size: 295]
+cgi-bin/.html        (Status: 403) [Size: 300]
+dav                  (Status: 301) [Size: 319] [--> http://192.168.18.128/dav/]
+index.php            (Status: 200) [Size: 891]
+index.php            (Status: 200) [Size: 891]
+index                (Status: 200) [Size: 891]
+phpMyAdmin           (Status: 301) [Size: 326] [--> http://192.168.18.128/phpMyAdmin/]
+phpinfo.php          (Status: 200) [Size: 48020]
+phpinfo.php          (Status: 200) [Size: 48020]
+phpinfo              (Status: 200) [Size: 48008]
+test                 (Status: 301) [Size: 320] [--> http://192.168.18.128/test/]
+twiki                (Status: 301) [Size: 321] [--> http://192.168.18.128/twiki/]
+server-status        (Status: 403) [Size: 300]
+===============================================================
+Finished
+===============================================================

@@ -1,0 +1,8 @@
+┌──(root㉿kali)-[~]
+└─# ip -4 -br addr; ip route; ip route get 192.168.18.128
+lo               UNKNOWN        127.0.0.1/8 
+eth0@if7         UP             172.17.0.2/16 
+default via 172.17.0.1 dev eth0 
+172.17.0.0/16 dev eth0 proto kernel scope link src 172.17.0.2 
+192.168.18.128 via 172.17.0.1 dev eth0 src 172.17.0.2 uid 0 
+    cache 

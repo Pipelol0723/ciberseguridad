@@ -1,0 +1,4 @@
+┌──(root㉿kali)-[~]
+└─# ls -lh /usr/share/seclists/Discovery/Web-Content/common.txt && wc -l /usr/share/seclists/Discovery/Web-Content/common.txt
+-rw-r--r-- 1 root root 38K Sep 19  2025 /usr/share/seclists/Discovery/Web-Content/common.txt
+4749 /usr/share/seclists/Discovery/Web-Content/common.txt
