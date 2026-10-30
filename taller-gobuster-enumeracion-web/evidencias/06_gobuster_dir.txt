@@ -1,0 +1,32 @@
+┌──(root㉿kali)-[~]
+└─# gobuster dir -u http://192.168.18.128 -w /usr/share/seclists/Discovery/Web-Content/common.txt -o resultados.txt --np
+===============================================================
+Gobuster v3.8.2
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://192.168.18.128
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/seclists/Discovery/Web-Content/common.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.8.2
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in directory enumeration mode
+===============================================================
+.hta                 (Status: 403) [Size: 291]
+.htpasswd            (Status: 403) [Size: 296]
+.htaccess            (Status: 403) [Size: 296]
+cgi-bin/             (Status: 403) [Size: 295]
+dav                  (Status: 301) [Size: 319] [--> http://192.168.18.128/dav/]
+index.php            (Status: 200) [Size: 891]
+index                (Status: 200) [Size: 891]
+phpMyAdmin           (Status: 301) [Size: 326] [--> http://192.168.18.128/phpMyAdmin/]
+phpinfo              (Status: 200) [Size: 48008]
+phpinfo.php          (Status: 200) [Size: 48020]
+test                 (Status: 301) [Size: 320] [--> http://192.168.18.128/test/]
+twiki                (Status: 301) [Size: 321] [--> http://192.168.18.128/twiki/]
+server-status        (Status: 403) [Size: 300]
+===============================================================
+Finished
+===============================================================

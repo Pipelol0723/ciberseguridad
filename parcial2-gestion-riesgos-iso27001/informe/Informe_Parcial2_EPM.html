@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parcial 2 – Riesgos de seguridad de la información en EPM</title>
+<style>
+  @page {
+    size: A4;
+    margin: 2cm 2cm 2.1cm 2cm;
+    @top-right { content: "Parcial 2 · Seguridad de la información y gestión de riesgos · Caso EPM"; font: 7.5pt Georgia, serif; color: #666; }
+    @bottom-center { content: counter(page) " / " counter(pages); font: 8.5pt Georgia, serif; color: #555; }
+  }
+  @page :first {
+    @top-right { content: none; }
+    @bottom-center { content: none; }
+  }
+  :root { --line: #8a8f99; --head: #e4e8ef; --ink: #161616; --muted: #555; --accent: #1f4e79; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: Cambria, Georgia, "Times New Roman", serif; font-size: 10pt; line-height: 1.33; color: var(--ink); background: #fff; margin: 0; }
+  main { max-width: 17cm; margin: 0 auto; }
+  @media screen { main { padding: 1.5cm 0.5cm; } }
+  h1 { font-size: 14pt; color: var(--accent); margin: 16pt 0 6pt; border-bottom: 1px solid #c9ced8; padding-bottom: 3pt; break-after: avoid; }
+  h2 { font-size: 11.5pt; color: var(--accent); margin: 11pt 0 4pt; break-after: avoid; }
+  p { margin: 0 0 6pt; text-align: justify; }
+  ul, ol { margin: 0 0 6pt 0; padding-left: 16pt; }
+  li { margin-bottom: 2pt; }
+  table { width: 100%; border-collapse: collapse; font-size: 8.2pt; line-height: 1.25; margin: 4pt 0 10pt; }
+  caption { caption-side: top; text-align: left; font-weight: bold; font-size: 9pt; margin-bottom: 3pt; color: #222; }
+  th, td { border: 0.6pt solid var(--line); padding: 2.5pt 4pt; vertical-align: top; text-align: left; }
+  th { background: var(--head); font-weight: bold; }
+  tr { break-inside: avoid; }
+  thead { display: table-header-group; }
+  .c { text-align: center; }
+  .nw { white-space: nowrap; }
+  .small { font-size: 8pt; }
+  .note { font-size: 8.5pt; color: var(--muted); }
+  .S { font-size: 7.5pt; font-weight: bold; color: #8a4b00; vertical-align: super; }
+  .box { border: 0.8pt solid #b8c2d1; background: #f4f7fb; padding: 6pt 9pt; margin: 6pt 0 10pt; }
+  .pb { break-before: page; }
+  .avoid { break-inside: avoid; }
+  /* niveles */
+  .crit { background: #ef9a9a; font-weight: bold; }
+  .alto { background: #ffcc80; font-weight: bold; }
+  .medio { background: #fff59d; font-weight: bold; }
+  .bajo { background: #c8e6c9; font-weight: bold; }
+  /* portada */
+  .cover { height: 25.4cm; display: flex; flex-direction: column; justify-content: space-between; text-align: center; break-after: page; }
+  .cover .uni { font-size: 13pt; letter-spacing: 0.5pt; margin-top: 1.2cm; }
+  .cover .tit { font-size: 20pt; color: var(--accent); font-weight: bold; line-height: 1.25; margin: 0 1cm; }
+  .cover .sub { font-size: 12pt; margin-top: 10pt; }
+  .cover table { width: 75%; margin: 0 auto; font-size: 10.5pt; }
+  .cover td { border: none; padding: 3pt 6pt; }
+  .cover td:first-child { text-align: right; font-weight: bold; width: 38%; }
+  .toc { columns: 2; column-gap: 18pt; font-size: 9.8pt; }
+  .toc a { color: var(--ink); text-decoration: none; }
+  .toc div { break-inside: avoid; margin-bottom: 2pt; }
+  /* mapas de calor */
+  .maps { display: flex; gap: 14pt; justify-content: space-between; }
+  .maps > div { flex: 1; }
+  table.hm { table-layout: fixed; font-size: 8pt; margin-top: 2pt; }
+  table.hm td, table.hm th { text-align: center; vertical-align: middle; height: 1.15cm; padding: 1pt; }
+  table.hm th { background: #f0f0f0; font-size: 7.5pt; }
+  table.hm td span { display: block; font-size: 6.8pt; color: #444; font-weight: normal; }
+  table.hm td b { font-size: 8.3pt; }
+  .hmtitle { font-weight: bold; font-size: 9.5pt; text-align: center; margin-bottom: 2pt; }
+  .refs { font-size: 7.6pt; line-height: 1.25; columns: 2; column-gap: 14pt; padding-left: 18pt; }
+  .refs li { margin-bottom: 2pt; overflow-wrap: anywhere; break-inside: avoid; }
+  a { color: #1a4d8f; }
+</style>
+</head>
+<body>
+<main>
+
+<!-- ============ PORTADA ============ -->
+<section class="cover">
+  <div>
+    <div class="uni">UNIVERSIDAD SERGIO ARBOLEDA<br><span style="font-size:11pt">Bogotá D.C.</span></div>
+  </div>
+  <div>
+    <div style="font-size:12pt; margin-bottom:14pt;">Parcial 2 – Seguridad de la información y gestión de riesgos</div>
+    <div class="tit">Análisis de riesgos de seguridad de la información en Empresas Públicas de Medellín E.S.P. (EPM)</div>
+    <div class="sub">Referencias normativas: ISO/IEC 27001:2022 (Anexo A) e ISO 31000:2018</div>
+  </div>
+  <table>
+    <tr><td>Estudiante:</td><td style="text-align:left">Andrés Felipe Céspedes Rondón</td></tr>
+    <tr><td>Profesor:</td><td style="text-align:left">MSc. Iván Darío Méndez Aguilera</td></tr>
+    <tr><td>Asignatura / grupo:</td><td style="text-align:left">Ciberseguridad 2026 – G01</td></tr>
+    <tr><td>Fecha:</td><td style="text-align:left">Octubre de 2026</td></tr>
+  </table>
+  <div class="note" style="text-align:center; margin-bottom:0.6cm;">
+    Trabajo académico elaborado solo con información pública. Todo lo marcado con <b>[S]</b> es un supuesto ficticio con fines académicos.<br>
+    No se realizaron pruebas sobre sistemas de EPM ni de sus filiales.
+  </div>
+</section>
+
+<!-- ============ CONTENIDO + RESUMEN ============ -->
+<h1 style="margin-top:0">Contenido</h1>
+<div class="toc">
+  <div><a href="#resumen">Resumen ejecutivo</a></div>
+  <div><a href="#s1">1. Contexto de la organización y metodología</a></div>
+  <div><a href="#s2">2. Actividad 1: Reglas internas de seguridad</a></div>
+  <div><a href="#s3">3. Actividad 2: Inventario de activos de información</a></div>
+  <div><a href="#s4">4. Actividad 3: Vulnerabilidades (CVE)</a></div>
+  <div><a href="#s5">5. Actividad 4: Análisis y evaluación de riesgos (ISO 31000)</a></div>
+  <div><a href="#s6">6. Actividad 5: Matriz de evaluación y tratamiento</a></div>
+  <div><a href="#s7">7. Actividad 6: Mapa de calor inherente y residual</a></div>
+  <div><a href="#s8">8. Actividad 7: Plan de tratamiento de riesgos</a></div>
+  <div><a href="#s9">9. Actividad 8: Caso de incidente (escenario ficticio)</a></div>
+  <div><a href="#s10">10. Actividad 9: Conclusiones</a></div>
+  <div><a href="#refs">Referencias</a></div>
+</div>
+
+<h1 id="resumen">Resumen ejecutivo</h1>
+<p>EPM es la matriz del Grupo EPM, que agrupa 48 empresas de servicios públicos en seis países y atiende a más de 10,1 millones de clientes y usuarios; solo EPM atiende 3.055.731 clientes y tiene 8.558 colaboradores [15]. Opera infraestructura crítica de energía, gas, agua y saneamiento, por lo que un incidente digital puede pasar de afectar oficinas a afectar el servicio de millones de personas. Esto ya ocurrió: el 12 de diciembre de 2022 EPM sufrió un ataque de ransomware atribuido a BlackCat/ALPHV que dejó caídos sus canales digitales, envió a unos 4.000 empleados a trabajar desde casa y afectó la recarga de más de 300.000 familias con prepago [16, 17].</p>
+<p>Con información pública verificable y supuestos marcados con [S], este informe propone 6 reglas internas que no están explícitas en las políticas publicadas por EPM, construye un inventario de 12 activos, analiza 10 vulnerabilidades reales (todas en el catálogo KEV de CISA) y evalúa 12 riesgos con el proceso de ISO 31000. El resultado inherente es de <b>2 riesgos críticos, 9 altos y 1 medio</b>. Con el plan de tratamiento propuesto (11 acciones, 12 meses, COP 12.150 millones [S]) el residual esperado es de <b>1 alto, 8 medios y 3 bajos</b>.</p>
+<div class="box">
+<b>Riesgos prioritarios:</b>
+<ol style="margin-bottom:2pt">
+  <li><b>R01 – Ransomware en TI</b> que detiene facturación, prepago y canales digitales (nivel 20, crítico).</li>
+  <li><b>R05 – Filtración masiva de datos personales de clientes</b> por doble extorsión (nivel 20, crítico).</li>
+  <li><b>R02 – Compromiso del acceso remoto y del perímetro</b> (VPN, ADC, firewall) (nivel 16, alto).</li>
+</ol>
+<b>Medidas clave:</b> MFA en todo acceso remoto y privilegiado, parcheo urgente de equipos de borde, administración por niveles con bóveda de credenciales, respaldos inmutables probados, segmentación TI/OT con acceso remoto por bastión y un plan de respuesta a incidentes ensayado con la junta. El riesgo de sabotaje del SCADA de energía (R03) queda en nivel alto aun después del plan y debe seguirse a nivel de junta.
+</div>
+
+<!-- ============ 1. CONTEXTO ============ -->
+<h1 id="s1">1. Contexto de la organización y metodología</h1>
+<h2>1.1 Perfil de la empresa (información pública)</h2>
+<ul>
+  <li><b>Razón social y naturaleza:</b> Empresas Públicas de Medellín E.S.P., empresa de servicios públicos de naturaleza 100 % pública, propiedad del Distrito de Medellín. Desde el 12 de mayo de 2025 separa su rol de matriz (direccionador del Grupo) y de empresa ejecutora [15].</li>
+  <li><b>Servicios:</b> generación, transmisión, distribución y comercialización de energía; gas; acueducto, alcantarillado y aseo. Es el primer agente en producción de energía del Sistema Interconectado Nacional [15].</li>
+  <li><b>Escala:</b> Grupo con 17.606 personas y 10.148.985 clientes y usuarios en Colombia, Chile, El Salvador, Guatemala, México y Panamá; EPM con 8.558 colaboradores y 3.055.731 clientes [15].</li>
+  <li><b>Tecnología mencionada públicamente:</b> implementación del ERP SAP S/4HANA con alcance de Grupo, SAP Ariba en la nube, IBM Maximo, GIS, sistemas SCADA, medidores inteligentes (AMI) y Microsoft Power Platform [15]. El plan de tecnología 2026 incluye integración TI–TO, adopción de inteligencia artificial y un DRP por negocio que integre TI y TO [12].</li>
+  <li><b>Gobierno de ciberseguridad:</b> Dirección de Ciberseguridad con una estrategia 2024–2027 organizada en gobernar, identificar, proteger, detectar, responder y recuperar, y un SOC [7, 15]. En octubre de 2025 la Junta suprimió su Comité de TI y Ciberseguridad y pasó la supervisión del riesgo de ciberseguridad al Comité de Auditoría y Riesgos [15].</li>
+</ul>
+<h2>1.2 Antecedente: ransomware de diciembre de 2022</h2>
+<p>El ataque empezó la tarde del 12 de diciembre de 2022 [17]. BleepingComputer confirmó con una muestra del cifrador y las notas de rescate que correspondía a BlackCat/ALPHV, y un investigador encontró un servidor del atacante con datos de un poco más de 40 equipos de EPM, lo que indica robo de información antes del cifrado [16]. Un informe interno filtrado (nunca publicado oficialmente) habló de pérdida de control de la plataforma, pérdida de respaldos y afectación de cerca del 25 % de la infraestructura [17]. Filiales como ESSA y Afinia también tuvieron que suspender canales digitales, y las recargas de prepago se restablecieron por medio de aliados como Nequi, GANA y PSE [18]. EPM no ha publicado el vector de entrada; en su lista pública de auditorías aparece una «Consultoría incidente ciberseguridad» cerrada el 27/12/2022 [14].</p>
+<h2>1.3 Marco normativo considerado</h2>
+<p>Ley 1581 de 2012 de protección de datos personales [42]; Ley 1273 de 2009 de delitos informáticos [43]; Resolución MinTIC 500 de 2021 (Modelo de Seguridad y Privacidad de la Información) y Acuerdo 1502 de 2021 del Consejo Nacional de Operación (CNO), guía de ciberseguridad del sector eléctrico, ambos citados por EPM en su lineamiento de seguridad digital [6]; Decreto 338 de 2022 sobre gobernanza de la seguridad digital del Estado [44]. EPM también evaluó en 2025 la implementación de la guía de ciberseguridad TO del Acuerdo CNO 1960 [14].</p>
+<h2>1.4 Metodología y alcance</h2>
+<p>Se siguió el proceso de ISO 31000:2018 [2]: establecer contexto y criterios, identificar, analizar y valorar riesgos, tratarlos y definir seguimiento. Los controles se toman del Anexo A de ISO/IEC 27001:2022 [1] y, para redes industriales, se usa como apoyo la idea de zonas y conductos de IEC 62443 [4]. El alcance son los procesos de prestación del servicio (TO), comerciales y corporativos (TI) de EPM matriz. Las fuentes se consultaron el 29/10/2026. Los responsables, cifras de impacto, presupuestos y el inventario de activos son supuestos [S]. Que un CVE se relacione con un tipo de tecnología no significa que EPM sea vulnerable: no hay evidencia pública de que use esas versiones.</p>
+
+<!-- ============ 2. REGLAS ============ -->
+<h1 id="s2">2. Actividad 1: Reglas internas de seguridad</h1>
+<h2>2.1 Documentos públicos revisados</h2>
+<p>Se descargaron las políticas publicadas en la sección «Políticas» y en «Transparencia» del sitio de EPM, se extrajo su texto y se buscaron los términos de cada regla sin tildes ni mayúsculas. Luego se leyó el contexto de cada coincidencia.</p>
+<table>
+  <caption>Tabla 1. Documentos revisados (consulta: 29/10/2026).</caption>
+  <thead><tr><th style="width:6%">ID</th><th>Documento</th><th style="width:34%">Contenido relevante</th></tr></thead>
+  <tbody>
+  <tr><td>D1</td><td>Política de seguridad de la información y ciberseguridad del Grupo EPM (Acta 1619 de Junta, 13/12/2016) y su Lineamiento 2023-LINGG-115 «Seguridad digital y continuidad de los servicios de tecnología» (23/02/2023) [5, 6]</td><td>Protección de activos críticos y ciberactivos, firma electrónica, inventario de activos, respuesta a incidentes, continuidad y concienciación.</td></tr>
+  <tr><td>D2</td><td>Estrategia de Seguridad de la Información y Ciberseguridad 2024–2027 [7]</td><td>Retos (controles para Aguas, Gas y Energía; servicios del SOC; continuidad de TI) y seis líneas de capacidad.</td></tr>
+  <tr><td>D3</td><td>Lineamiento sobre protección de datos personales (Decreto 2013-DECGGL-1946, rev. 003 de 23/09/2019) [8]</td><td>Principios, derechos, deberes, prohibiciones, transferencias y medidas de seguridad por niveles.</td></tr>
+  <tr><td>D4</td><td>Política de Gestión Ética y Cumplimiento (Acta 1801, 01/10/2024) [9]</td><td>Declaración ética y de cumplimiento normativo.</td></tr>
+  <tr><td>D5</td><td>Política de cero tolerancia frente al fraude, la corrupción y el soborno [11]</td><td>Gestión general del riesgo de fraude.</td></tr>
+  <tr><td>D6</td><td>Plan Estratégico Integrado 2026 de la Gerencia Tecnologías y Procesos (PETI) [12]</td><td>Iniciativas: integración TI–TO, IA, DRP, gobierno de datos.</td></tr>
+  <tr><td>D7</td><td>Página de políticas: gestión integral de riesgos (2010), gestión de TI (2011), gestión de la información (2014), resiliencia organizacional (2023) y política digital [5]</td><td>Declaraciones de una o dos frases, sin reglas operativas.</td></tr>
+  <tr><td>D8</td><td>Código de Ética del Grupo EPM [10]</td><td>Principios y valores (transparencia, calidez, responsabilidad).</td></tr>
+  </tbody>
+</table>
+<p class="note">La Política de Seguridad de EPM de 2018 [13] es un certificado escaneado sin texto, así que no se pudo buscar automáticamente; se leyó a mano y trata de seguridad física de personas, infraestructura y reputación, sin controles digitales. Los documentos internos del SGSI que cita D1 (por ejemplo el glosario «O-SGSI-A01-002») están en la intranet de EPM y no son públicos, por lo que no se revisaron.</p>
+
+<h2>2.2 Búsquedas realizadas y resultado</h2>
+<table>
+  <caption>Tabla 2. Términos buscados en D1–D8 y resultado por regla.</caption>
+  <thead><tr><th style="width:8%">Regla</th><th style="width:27%">Términos buscados</th><th>Resultado</th></tr></thead>
+  <tbody>
+  <tr><td>RI-01</td><td>«acceso remoto», «remoto», «SCADA», «industrial», «segmentación», «OT/TO»</td><td>0 coincidencias para los cinco primeros. «TO» solo aparece en la política digital (tecnologías «TI, TO y TC») y en la iniciativa «Integración TI-TO» de D6, sin reglas de acceso.</td></tr>
+  <tr><td>RI-02</td><td>«privilegiado», «administrador», «contraseña», «multifactor / MFA / doble factor», «credencial»</td><td>D1 nombra «contraseñas» solo como ejemplo de firma electrónica (nota al pie). «Privilegiando» (D4, D7) y «administradores» (D5) tienen otro sentido. MFA y credencial: 0.</td></tr>
+  <tr><td>RI-03</td><td>«internet», «expuesto / exposición», «superficie», «parche», «vulnerabilidad», «configuración»</td><td>D3 dice que los datos personales no podrán estar en internet para consulta abierta (publicación de datos, no servicios). D2 menciona la «gestión de vulnerabilidades» como servicio del SOC, sin criterios. D1 pide mantener el inventario de activos críticos, pero no trata la exposición a internet. «Parche» y «superficie»: 0.</td></tr>
+  <tr><td>RI-04</td><td>«log», «registro de eventos», «bitácora», «trazabilidad», «retención», «sincronización», «monitoreo»</td><td>0 coincidencias salvo «monitorear»: D1 pide «monitorear permanentemente la infraestructura tecnológica», sin fuentes, retención ni sincronización de relojes.</td></tr>
+  <tr><td>RI-05</td><td>«suplantación», «phishing», «cuenta bancaria», «pago», «correo»</td><td>D1 usa «suplantación de identidad» solo para justificar la firma electrónica de documentos. D5 gestiona el fraude en general, sin procedimiento de verificación de pagos. «Phishing» y «cuenta bancaria»: 0.</td></tr>
+  <tr><td>RI-06</td><td>«pruebas», «ambiente de desarrollo / pruebas», «enmascaramiento», «anonimización», «seudonimización»</td><td>D3 solo menciona «pruebas sicotécnicas» de selección y medidas «físicas, lógicas y administrativas» en tres niveles (numeral 15), sin regla para ambientes no productivos. Resto: 0.</td></tr>
+  </tbody>
+</table>
+<p><b>Conclusión de la revisión:</b> las políticas públicas de EPM son declaraciones de alto nivel. Ninguna de las seis reglas está contemplada de forma explícita, aunque D1 y D2 dan la base para crearlas (inventario de ciberactivos, monitoreo, continuidad y SOC).</p>
+
+<h2>2.3 Reglas propuestas</h2>
+<table>
+  <caption>Tabla 3. Reglas internas propuestas y controles del Anexo A de ISO/IEC 27001:2022.</caption>
+  <thead><tr><th style="width:7%">ID</th><th style="width:44%">Regla</th><th>Justificación</th><th style="width:12%">Anexo A</th></tr></thead>
+  <tbody>
+  <tr><td>RI-01</td><td><b>Acceso remoto a redes OT solo por bastión.</b> Ningún empleado ni tercero se conecta directo a redes de generación, transmisión, distribución o plantas de agua. Se entra por un bastión en la DMZ industrial con MFA, cuenta nominal, ventana de tiempo aprobada y grabación de la sesión. Se prohíben módems, routers 4G y software de control remoto no autorizado en redes OT.</td><td>La integración TI–TO del PETI 2026 [12] aumenta los caminos hacia la operación. Hay explotación real de PLC expuestos en empresas de agua [39].</td><td>5.15, 8.5, 8.20, 8.22</td></tr>
+  <tr><td>RI-02</td><td><b>Administración por niveles.</b> Las cuentas con privilegios sobre Directorio Activo, hipervisores, respaldos y equipos de red son nominales, distintas de la cuenta de correo, se usan solo desde estaciones de administración dedicadas y se guardan en una bóveda con rotación y MFA. Hipervisores y servidor de respaldos no se unen al dominio de usuarios.</td><td>En 2022 se reportó pérdida de control de la plataforma y de los respaldos [17]. V04 y V05 muestran que el dominio es la llave de todo.</td><td>5.18, 8.2, 8.5</td></tr>
+  <tr><td>RI-03</td><td><b>Superficie expuesta controlada.</b> Todo servicio publicado en internet debe estar en el inventario con un dueño y se revisa con un escaneo externo mensual. Las interfaces de administración (routers, firewalls, hipervisores, consolas de respaldo) y los equipos OT nunca se publican en internet.</td><td>Siete de los diez CVE de la sección 4 (V01, V02, V06–V10) se explotan por red y sin autenticación contra servicios que no deberían estar expuestos.</td><td>5.9, 8.9, 8.20, 8.21</td></tr>
+  <tr><td>RI-04</td><td><b>Registros para investigar.</b> VPN, firewalls, controladores de dominio, correo, ERP, hipervisores, respaldos y estaciones de ingeniería OT envían sus registros al SOC con hora sincronizada (NTP) y retención mínima de 12 meses (90 días en línea). Solo el SOC puede borrarlos, con registro.</td><td>Tras el ataque de 2022 hubo versiones encontradas sobre el origen y no hubo prueba pública del primer servidor infectado [17].</td><td>5.28, 8.15, 8.16, 8.17</td></tr>
+  <tr><td>RI-05</td><td><b>Verificación de pagos y marca.</b> Todo cambio de cuenta bancaria de proveedores o empleados, y toda orden de pago urgente que llegue por correo, se confirma por un segundo canal (llamada al número registrado en SAP/Ariba) con doble aprobación. Los dominios de EPM publican DMARC con política <i>reject</i> y se vigilan dominios y portales falsos.</td><td>EPM atendió en 2025 un «incidente de suplantación al portal factura web» [14]. Paga a miles de proveedores registrados en Ariba [15].</td><td>5.7, 5.14, 6.3</td></tr>
+  <tr><td>RI-06</td><td><b>Sin datos reales en pruebas.</b> Se prohíbe copiar datos personales reales de clientes (sistema comercial, prepago, AMI) a ambientes de desarrollo, pruebas, capacitación o a proveedores de software. Se usan datos sintéticos o enmascarados; las excepciones requieren aprobación escrita del responsable de protección de datos y duran máximo 30 días.</td><td>La migración a SAP S/4HANA y el proyecto AMI [15] implican migraciones y pruebas con terceros sobre datos de 3,05 M de clientes.</td><td>5.34, 8.11, 8.31, 8.33</td></tr>
+  </tbody>
+</table>
+
+<!-- ============ 3. ACTIVOS ============ -->
+<h1 id="s3">3. Actividad 2: Inventario de activos de información</h1>
+<p>Inventario ficticio [S] basado en la tecnología que EPM menciona públicamente. Cada activo se valora de 1 a 5 en confidencialidad, integridad y disponibilidad (C-I-D). Criticidad = valor máximo: 5 crítica, 4 alta, 3 media.</p>
+<table>
+  <caption>Tabla 4. Inventario de activos de información [S].</caption>
+  <thead><tr><th style="width:5%">ID</th><th style="width:16%">Activo</th><th>Descripción</th><th style="width:18%">Responsable [S]</th><th style="width:11%">Clasificación</th><th style="width:6%" class="c">C-I-D</th><th style="width:8%">Criticidad</th></tr></thead>
+  <tbody>
+  <tr><td>A01</td><td>SCADA/EMS de energía</td><td>Supervisión y control de generación, transmisión y distribución desde los centros de control; estaciones de ingeniería y controladores de centrales y subestaciones.</td><td>Gerente de Operación de Energía</td><td>Restringida</td><td class="c">3-5-5</td><td>Crítica</td></tr>
+  <tr><td>A02</td><td>SCADA, PLC y HMI de agua</td><td>Control de plantas de potabilización, tanques, bombeo y tratamiento de aguas residuales.</td><td>Gerente de Provisión de Aguas</td><td>Restringida</td><td class="c">3-5-5</td><td>Crítica</td></tr>
+  <tr><td>A03</td><td>ERP SAP S/4HANA y SAP Ariba</td><td>Finanzas, compras, contratación y mantenimiento de activos (integrado con IBM Maximo y GIS) [15].</td><td>Gerente de Tecnologías y Procesos</td><td>Confidencial</td><td class="c">4-4-4</td><td>Alta</td></tr>
+  <tr><td>A04</td><td>Sistema comercial y de facturación</td><td>Lecturas, liquidación, facturación, recaudo y recargas de prepago de energía, agua y gas.</td><td>Vicepresidente Comercial</td><td>Confidencial</td><td class="c">4-5-5</td><td>Crítica</td></tr>
+  <tr><td>A05</td><td>Base de datos de clientes</td><td>Datos personales de 3,05 M de clientes [15]: identificación, dirección, consumo, pagos y subsidios.</td><td>Jefe de la Unidad de Cumplimiento</td><td>Restringida</td><td class="c">5-4-3</td><td>Crítica</td></tr>
+  <tr><td>A06</td><td>Portal web, app y factura web</td><td>Autogestión, consulta y pago en línea; integración con PSE y aliados de recaudo.</td><td>Jefe de Canales Digitales</td><td>Pública / Confidencial</td><td class="c">3-4-4</td><td>Alta</td></tr>
+  <tr><td>A07</td><td>Directorio Activo e identidades</td><td>Cuentas de usuarios, servicios y administradores; certificados (AD CS) e inicio de sesión único.</td><td>Jefe de Infraestructura TI</td><td>Restringida</td><td class="c">5-5-5</td><td>Crítica</td></tr>
+  <tr><td>A08</td><td>Correo corporativo e intranet</td><td>Comunicación y documentos de trabajo de 8.558 colaboradores [15].</td><td>Jefe de Infraestructura TI</td><td>Uso interno</td><td class="c">4-4-4</td><td>Alta</td></tr>
+  <tr><td>A09</td><td>Plataforma de virtualización</td><td>Hipervisores y almacenamiento del centro de datos principal y del centro alterno (CAPD) [14].</td><td>Jefe de Infraestructura TI</td><td>Restringida</td><td class="c">4-5-5</td><td>Crítica</td></tr>
+  <tr><td>A10</td><td>Plataforma de respaldo</td><td>Copias de servidores, bases de datos y configuraciones de TI.</td><td>Jefe de Continuidad de TI</td><td>Restringida</td><td class="c">5-5-4</td><td>Crítica</td></tr>
+  <tr><td>A11</td><td>Perímetro y acceso remoto</td><td>Firewalls, VPN y controladores de entrega de aplicaciones para teletrabajo y terceros.</td><td>Jefe de Redes y Seguridad Perimetral</td><td>Restringida</td><td class="c">4-5-5</td><td>Crítica</td></tr>
+  <tr><td>A12</td><td>Red de telecomunicaciones operativa</td><td>Routers, fibra óptica propia y enlaces WAN entre sedes, centros de control y subestaciones.</td><td>Jefe de Telecomunicaciones</td><td>Restringida</td><td class="c">3-4-5</td><td>Crítica</td></tr>
+  </tbody>
+</table>
+
+<!-- ============ 4. VULNERABILIDADES ============ -->
+<h1 id="s4">4. Actividad 3: Identificación de vulnerabilidades (CVE)</h1>
+<p>Se eligieron diez CVE reales sobre tecnologías típicas de una empresa de servicios públicos con TI y TO: acceso remoto, correo, identidad, virtualización, respaldos, ERP, red y control industrial. Todos se verificaron en la NVD (CVSS v3.x) y en el catálogo KEV de CISA, versión 2026.10.29 [19]: <b>los diez están en KEV</b>, es decir, tienen explotación activa confirmada, y seis tienen uso conocido en campañas de ransomware. La columna «Relación» explica por qué el tipo de tecnología es pertinente para EPM; <b>no se afirma que EPM use esas versiones ni que sea vulnerable</b>.</p>
+<table>
+  <caption>Tabla 5. Vulnerabilidades analizadas (CVSS v3.x de la NVD; entre paréntesis, el del fabricante cuando difiere).</caption>
+  <thead><tr><th style="width:10%">ID / CVE</th><th style="width:23%">Producto y falla</th><th style="width:13%">Impacto</th><th style="width:9%">CVSS / KEV</th><th style="width:18%">Relación posible con EPM</th><th>Mitigación</th></tr></thead>
+  <tbody>
+  <tr><td><b>V01</b><br>CVE-2023-4966<br>«Citrix Bleed»</td><td>NetScaler ADC y Gateway configurados como VPN, ICA/RDP Proxy o AAA: desbordamiento que filtra memoria con tokens de sesión [20, 21].</td><td>Secuestro de sesiones ya autenticadas, saltando contraseña y MFA.</td><td>7.5 (9.4)<br>KEV: sí (18/10/2023); ransomware: conocido [22]</td><td>A11: acceso remoto de empleados y terceros [S].</td><td>Actualizar a 14.1-8.50, 13.1-49.15, 13.0-92.19 o posteriores y terminar todas las sesiones activas [21].</td></tr>
+  <tr><td><b>V02</b><br>CVE-2024-3400</td><td>Palo Alto PAN-OS con GlobalProtect: creación arbitraria de archivos que lleva a inyección de comandos [23, 24].</td><td>Ejecución de código como root en el firewall, sin autenticación.</td><td>10.0<br>KEV: sí (12/04/2024); ransomware: conocido</td><td>A11: firewall perimetral con VPN [S].</td><td>Actualizar a 10.2.9-h1, 11.0.4-h1, 11.1.2-h3 o posteriores y revisar indicadores de compromiso [24].</td></tr>
+  <tr><td><b>V03</b><br>CVE-2022-41082<br>«ProxyNotShell»</td><td>Microsoft Exchange Server local: deserialización insegura por PowerShell remoto, encadenada con la SSRF CVE-2022-41040 [25, 26].</td><td>Ejecución remota de código en el servidor de correo.</td><td>8.0 (Microsoft)<br>KEV: sí (30/09/2022); ransomware: conocido</td><td>A08 si el correo es Exchange local o híbrido [S]. Se explotó en 2022, pero no hay evidencia de que fuera el vector del ataque a EPM.</td><td>Aplicar la actualización de seguridad de noviembre de 2022 o posterior; restringir PowerShell remoto; evaluar correo en la nube.</td></tr>
+  <tr><td><b>V04</b><br>CVE-2022-26923<br>«Certifried»</td><td>Active Directory con AD CS: un usuario del dominio obtiene un certificado que lo hace pasar por un controlador de dominio [27, 28].</td><td>Escalamiento a administrador del dominio.</td><td>8.8 (Microsoft)<br>KEV: sí (18/08/2022); ransomware: desconocido</td><td>A07: cualquier dominio Windows con servicios de certificados [S].</td><td>Actualizaciones de mayo de 2022 y modo de asignación fuerte de certificados (KB5014754); revisar plantillas de AD CS.</td></tr>
+  <tr><td><b>V05</b><br>CVE-2024-37085</td><td>VMware ESXi unido a AD: quien recrea el grupo «ESXi Admins» obtiene control total del host [29, 30].</td><td>Cifrado masivo de máquinas virtuales.</td><td>7.2 (6.8)<br>KEV: sí (30/07/2024); ransomware: conocido [31]</td><td>A09: virtualización del centro de datos [S].</td><td>ESXi 8.0 U3 o posterior; en 7.0, configuración alternativa de VMSA-2024-0013; no unir ESXi al dominio [30].</td></tr>
+  <tr><td><b>V06</b><br>CVE-2024-40711</td><td>Veeam Backup &amp; Replication: deserialización de datos no confiables [32, 33].</td><td>Ejecución remota de código sin autenticación en el servidor de respaldos.</td><td>9.8<br>KEV: sí (17/10/2024); ransomware: conocido</td><td>A10: plataforma de respaldo [S]. En 2022 se reportó pérdida de respaldos [17].</td><td>Actualizar a 12.2 (build 12.2.0.334) o posterior; sacar el servidor del dominio; repositorio inmutable [33].</td></tr>
+  <tr><td><b>V07</b><br>CVE-2025-31324</td><td>SAP NetWeaver Visual Composer: el Metadata Uploader no exige autorización [34, 35].</td><td>Carga de archivos ejecutables (webshell) sin autenticación.</td><td>9.8 (10.0)<br>KEV: sí (29/04/2025); ransomware: conocido</td><td>A03: EPM usa SAP (S/4HANA, Ariba) [15]; no se sabe si tiene NetWeaver Java con Visual Composer [S].</td><td>Nota de seguridad SAP 3594142; deshabilitar Visual Composer si no se usa; buscar webshells [35].</td></tr>
+  <tr><td><b>V08</b><br>CVE-2023-20198</td><td>Cisco IOS XE con la interfaz web (HTTP Server) habilitada: crea una cuenta de privilegio 15 sin autenticación [36, 37].</td><td>Control total del router o switch.</td><td>10.0<br>KEV: sí (16/10/2023); ransomware: desconocido</td><td>A12: routers de sedes y subestaciones [S].</td><td>Deshabilitar el servidor HTTP en equipos expuestos y actualizar a una versión corregida (p. ej. 17.9.4a) [37].</td></tr>
+  <tr><td><b>V09</b><br>CVE-2023-6448</td><td>PLC y HMI Unitronics Vision/Samba con contraseña administrativa por defecto (VisiLogic &lt; 9.9.00) [38].</td><td>Control administrativo del PLC por red.</td><td>9.8<br>KEV: sí (11/12/2023); ransomware: desconocido</td><td>A02: CISA reportó su explotación contra empresas de agua en 2023 [39]. Se usa como ejemplo del tipo de PLC de plantas [S].</td><td>Cambiar la contraseña, actualizar a VisiLogic 9.9.00, sacar el PLC de internet y cambiar el puerto por defecto [39].</td></tr>
+  <tr><td><b>V10</b><br>CVE-2021-22681</td><td>Controladores Rockwell Logix (ControlLogix, CompactLogix, GuardLogix) y Studio 5000: la clave de verificación se puede descubrir [40, 41].</td><td>Una aplicación no autorizada se conecta al controlador y cambia su lógica.</td><td>9.8<br>KEV: sí (05/03/2026); ransomware: desconocido</td><td>A01: controladores de centrales y subestaciones [S].</td><td>Selector del controlador en RUN, CIP Security, segmentar la red OT y bloquear el puerto 44818 desde redes no OT [41].</td></tr>
+  </tbody>
+</table>
+<p class="note">Fuentes: NVD (CVSS y descripción), boletín del fabricante y catálogo KEV de CISA [19] para cada CVE; ver números entre corchetes. «Ransomware: conocido / desconocido» es el campo <i>knownRansomwareCampaignUse</i> del catálogo KEV.</p>
+
+<!-- ============ 5. ANÁLISIS ============ -->
+<h1 id="s5">5. Actividad 4: Análisis y evaluación de riesgos (ISO 31000)</h1>
+<h2>5.1 Partes interesadas</h2>
+<table>
+  <caption>Tabla 6. Partes interesadas en la seguridad de la información de EPM.</caption>
+  <thead><tr><th style="width:24%">Parte interesada</th><th>Interés o expectativa</th><th style="width:10%">Tipo</th><th style="width:16%">Riesgos</th></tr></thead>
+  <tbody>
+  <tr><td>Clientes y usuarios (3,05 M en EPM) [15]</td><td>Energía, agua y gas continuos; datos protegidos; canales de pago confiables.</td><td>Externa</td><td>R01, R03, R04, R05, R07</td></tr>
+  <tr><td>Distrito de Medellín y Junta Directiva</td><td>Continuidad, reputación y transferencias; el Comité de Auditoría y Riesgos supervisa la ciberseguridad desde octubre de 2025 [15].</td><td>Interna</td><td>Todos</td></tr>
+  <tr><td>Colaboradores (8.558) [15]</td><td>Herramientas disponibles y protección de sus datos personales.</td><td>Interna</td><td>R01, R06, R07</td></tr>
+  <tr><td>Dirección de Ciberseguridad, SOC y Gerencia de Tecnologías y Procesos [7, 12]</td><td>Recursos, prioridades claras y autoridad para aplicar el plan.</td><td>Interna</td><td>Todos</td></tr>
+  <tr><td>Filiales del Grupo EPM</td><td>Servicios compartidos; en 2022 ESSA y Afinia también suspendieron canales [18].</td><td>Grupo</td><td>R01, R02, R06</td></tr>
+  <tr><td>Proveedores, contratistas e integradores OT</td><td>Reglas de acceso claras y estables en los contratos.</td><td>Externa</td><td>R03, R09, R11</td></tr>
+  <tr><td>SSPD, CREG, CNO y XM</td><td>Calidad y continuidad del servicio; guía de ciberseguridad del CNO [6].</td><td>Reguladora</td><td>R01, R03, R04, R10</td></tr>
+  <tr><td>Superintendencia de Industria y Comercio (SIC)</td><td>Cumplimiento de la Ley 1581 y reporte de incidentes con datos personales [42].</td><td>Reguladora</td><td>R05, R12</td></tr>
+  <tr><td>MinTIC, ColCERT y Fiscalía</td><td>Gestión de incidentes de seguridad digital y denuncia de delitos informáticos [43, 44].</td><td>Autoridad</td><td>R01, R03, R05</td></tr>
+  <tr><td>Acreedores y calificadoras</td><td>Estabilidad financiera; Moody's advirtió en 2022 el riesgo del ataque para la operación [18].</td><td>Externa</td><td>R01, R05</td></tr>
+  </tbody>
+</table>
+
+<h2>5.2 Criterios de valoración</h2>
+<p>Nivel de riesgo = probabilidad (P) × impacto (I), de 1 a 25. El impacto se toma como la peor consecuencia entre las dimensiones de la Tabla 9. Los umbrales económicos son ficticios [S], pero se calibraron con lo ocurrido en 2022: más de 300.000 familias sin recarga de prepago y canales caídos varios días [17] corresponde a un impacto 4 o 5.</p>
+<div class="maps">
+<div>
+<table>
+  <caption>Tabla 7. Escala de probabilidad.</caption>
+  <thead><tr><th class="c" style="width:8%">P</th><th style="width:22%">Nivel</th><th>Criterio</th></tr></thead>
+  <tbody>
+  <tr><td class="c">1</td><td>Rara</td><td>No se espera en 5 años; sin precedentes en el sector.</td></tr>
+  <tr><td class="c">2</td><td>Improbable</td><td>Una vez en 3 a 5 años; exige acceso previo y varias fallas.</td></tr>
+  <tr><td class="c">3</td><td>Posible</td><td>Una vez en 1 a 3 años; ya pasó en empresas del sector.</td></tr>
+  <tr><td class="c">4</td><td>Probable</td><td>Al menos una vez al año; exploit en KEV o ya ocurrió en EPM.</td></tr>
+  <tr><td class="c">5</td><td>Casi cierta</td><td>Continua o varias veces al año (phishing, escaneos).</td></tr>
+  </tbody>
+</table>
+</div>
+<div>
+<table>
+  <caption>Tabla 8. Niveles de riesgo y respuesta.</caption>
+  <thead><tr><th>Nivel</th><th>Rango</th><th>Respuesta</th></tr></thead>
+  <tbody>
+  <tr><td class="bajo">Bajo</td><td>1–4</td><td>Se acepta; revisión anual.</td></tr>
+  <tr><td class="medio">Medio</td><td>5–9</td><td>Seguimiento trimestral; tratar si es barato.</td></tr>
+  <tr><td class="alto">Alto</td><td>10–16</td><td>Tratar en máximo 12 meses; informe al comité.</td></tr>
+  <tr><td class="crit">Crítico</td><td>20–25</td><td>Tratar de inmediato; seguimiento de la junta.</td></tr>
+  </tbody>
+</table>
+</div>
+</div>
+<table>
+  <caption>Tabla 9. Escala de impacto (montos ficticios [S]).</caption>
+  <thead><tr><th class="c" style="width:4%">I</th><th style="width:12%">Nivel</th><th>Servicio</th><th>Datos personales</th><th>Financiero</th><th>Legal y reputacional</th></tr></thead>
+  <tbody>
+  <tr><td class="c">1</td><td>Insignificante</td><td>Sin efecto en clientes; menos de 1 h interno.</td><td>Sin datos personales.</td><td>&lt; COP 50 M</td><td>Sin efecto externo.</td></tr>
+  <tr><td class="c">2</td><td>Menor</td><td>Proceso interno detenido &lt; 8 h.</td><td>&lt; 1.000 registros.</td><td>COP 50–500 M</td><td>Quejas aisladas.</td></tr>
+  <tr><td class="c">3</td><td>Moderado</td><td>Una zona o canal digital caído &lt; 24 h.</td><td>Hasta 100.000 registros.</td><td>COP 0,5–5 mil M</td><td>Requerimiento de SIC o SSPD; prensa local.</td></tr>
+  <tr><td class="c">4</td><td>Mayor</td><td>Varios servicios o más de 300.000 clientes, 1 a 3 días.</td><td>Más de 100.000 registros.</td><td>COP 5–50 mil M</td><td>Investigación formal; prensa nacional.</td></tr>
+  <tr><td class="c">5</td><td>Catastrófico</td><td>Cortes masivos de energía o agua, o riesgo para la salud pública.</td><td>Más de 1 millón de registros.</td><td>&gt; COP 50 mil M</td><td>Sanciones máximas (hasta 2.000 SMMLV por la Ley 1581, art. 23 [42]); intervención.</td></tr>
+  </tbody>
+</table>
+
+<h2>5.3 Valoración del riesgo inherente</h2>
+<table>
+  <caption>Tabla 10. Riesgos identificados y nivel inherente (sin los controles propuestos).</caption>
+  <thead><tr><th style="width:5%">ID</th><th style="width:22%">Riesgo</th><th style="width:11%">Activos</th><th style="width:9%">CVE</th><th>Justificación de P e I</th><th class="c" style="width:3.5%">P</th><th class="c" style="width:3.5%">I</th><th class="c" style="width:8%">Nivel</th></tr></thead>
+  <tbody>
+  <tr><td>R01</td><td>Ransomware en TI que detiene facturación, prepago y canales digitales</td><td>A04, A06, A07, A09, A10</td><td>V03–V06</td><td>Ya ocurrió en 2022 [16, 17]; varios CVE con uso conocido en ransomware. Afectó a más de 300.000 familias.</td><td class="c">4</td><td class="c">5</td><td class="c crit">20 Crítico</td></tr>
+  <tr><td>R02</td><td>Compromiso del acceso remoto y del perímetro</td><td>A11</td><td>V01, V02</td><td>Los equipos de borde son de los más explotados del KEV; abren la puerta a R01 y R05.</td><td class="c">4</td><td class="c">4</td><td class="c alto">16 Alto</td></tr>
+  <tr><td>R03</td><td>Sabotaje o manipulación del SCADA de energía</td><td>A01, A12</td><td>V10, V08</td><td>Exige conocimiento especializado, pero la integración TI–TO [12] abre caminos. Consecuencia física: cortes masivos.</td><td class="c">3</td><td class="c">5</td><td class="c alto">15 Alto</td></tr>
+  <tr><td>R04</td><td>Ataque a PLC y HMI de plantas de agua</td><td>A02</td><td>V09</td><td>Ataques reales a empresas de agua en 2023 [39]. Puede afectar la calidad del agua.</td><td class="c">3</td><td class="c">5</td><td class="c alto">15 Alto</td></tr>
+  <tr><td>R05</td><td>Filtración masiva de datos personales de clientes</td><td>A05, A04</td><td>V01, V03, V07</td><td>Doble extorsión habitual; en 2022 se robaron datos de más de 40 equipos [16]. 3,05 M de titulares.</td><td class="c">4</td><td class="c">5</td><td class="c crit">20 Crítico</td></tr>
+  <tr><td>R06</td><td>Toma del Directorio Activo</td><td>A07, A09</td><td>V04, V05</td><td>Requiere acceso inicial; si ocurre, el atacante controla todo el dominio y los hipervisores.</td><td class="c">3</td><td class="c">5</td><td class="c alto">15 Alto</td></tr>
+  <tr><td>R07</td><td>Phishing, suplantación de canales y fraude de pagos</td><td>A06, A08</td><td>—</td><td>Ataque continuo; EPM atendió una suplantación del portal factura web en 2025 [14]. Pérdida contenible.</td><td class="c">5</td><td class="c">3</td><td class="c alto">15 Alto</td></tr>
+  <tr><td>R08</td><td>Destrucción o cifrado de respaldos</td><td>A10, A09</td><td>V06, V05</td><td>Los atacantes buscan primero los respaldos; en 2022 se reportó su pérdida [17]. Sin respaldo no hay recuperación.</td><td class="c">3</td><td class="c">5</td><td class="c alto">15 Alto</td></tr>
+  <tr><td>R09</td><td>Compromiso del ERP SAP</td><td>A03</td><td>V07</td><td>CVE en KEV y migración a S/4HANA en curso [15]. Fraude en pagos y robo de contratos.</td><td class="c">3</td><td class="c">4</td><td class="c alto">12 Alto</td></tr>
+  <tr><td>R10</td><td>Toma de routers de la red operativa</td><td>A12</td><td>V08</td><td>Explotación masiva de interfaces web en 2023. Se pierde comunicación con subestaciones y se opera manual.</td><td class="c">3</td><td class="c">4</td><td class="c alto">12 Alto</td></tr>
+  <tr><td>R11</td><td>Incidente en un proveedor con acceso a sistemas</td><td>A01, A02, A03</td><td>—</td><td>Integradores OT y soporte SCADA con accesos permanentes y cuentas compartidas [S].</td><td class="c">3</td><td class="c">4</td><td class="c alto">12 Alto</td></tr>
+  <tr><td>R12</td><td>Exposición de datos reales en ambientes de prueba</td><td>A05</td><td>—</td><td>Migraciones de S/4HANA y AMI [15] sin regla de enmascaramiento (RI-06). Copias parciales.</td><td class="c">3</td><td class="c">3</td><td class="c medio">9 Medio</td></tr>
+  </tbody>
+</table>
+<p><b>Resumen inherente:</b> 2 críticos (R01, R05), 9 altos (R02, R03, R04, R06, R07, R08, R09, R10, R11) y 1 medio (R12).</p>
+
+<!-- ============ 6. MATRIZ ============ -->
+<h1 id="s6">6. Actividad 5: Matriz de evaluación y tratamiento del riesgo</h1>
+<p>La matriz se divide en dos tablas para que se pueda leer en A4: la primera describe el escenario y la segunda la decisión de tratamiento. Los controles propuestos remiten a las acciones AC del plan (sección 8).</p>
+<table>
+  <caption>Tabla 11a. Escenario de riesgo: activo, amenaza, vulnerabilidad y controles existentes.</caption>
+  <thead><tr><th style="width:5%">ID</th><th style="width:10%">Activos</th><th style="width:21%">Amenaza</th><th style="width:22%">Vulnerabilidad</th><th>Controles existentes</th><th class="c" style="width:9%">Inherente</th></tr></thead>
+  <tbody>
+  <tr><td>R01</td><td>A04, A06, A07, A09, A10</td><td>Grupo de ransomware como servicio (RaaS)</td><td>V03–V06; privilegios amplios [S]</td><td>SOC y plan estratégico de ciberseguridad [7, 15]; DRP en actualización [12]; antivirus en equipos [S]</td><td class="c crit">4×5=20</td></tr>
+  <tr><td>R02</td><td>A11</td><td>Explotación masiva de equipos de borde</td><td>V01, V02; MFA no universal [S]</td><td>Firewalls y VPN [S]; gestión de vulnerabilidades del SOC [7]</td><td class="c alto">4×4=16</td></tr>
+  <tr><td>R03</td><td>A01, A12</td><td>Actor estatal o criminal con capacidad OT</td><td>V10, V08; conexiones TI–OT [S]</td><td>Guía de ciberseguridad del CNO y auditorías TO [6, 14]; segmentación parcial [S]</td><td class="c alto">3×5=15</td></tr>
+  <tr><td>R04</td><td>A02</td><td>Hacktivistas que buscan PLC expuestos</td><td>V09; contraseñas por defecto [S]</td><td>Personal de operación en planta [S]; auditoría SCADA [14]</td><td class="c alto">3×5=15</td></tr>
+  <tr><td>R05</td><td>A05, A04</td><td>Extorsión con publicación de datos</td><td>V01, V03, V07; bases sin cifrar [S]</td><td>Lineamiento de datos personales con medidas por niveles [8]; SOC [7]</td><td class="c crit">4×5=20</td></tr>
+  <tr><td>R06</td><td>A07, A09</td><td>Escalamiento de privilegios tras acceso inicial</td><td>V04, V05; cuentas admin en uso diario [S]</td><td>Revisión de calidad de contraseñas (auditoría 2021) [14]; SOC [7]</td><td class="c alto">3×5=15</td></tr>
+  <tr><td>R07</td><td>A06, A08</td><td>Phishing, portales falsos, fraude BEC</td><td>Sin verificación por doble canal ni DMARC estricto [S]</td><td>Atención de la suplantación de factura web (2025) [14]; política de cero tolerancia al fraude [11]</td><td class="c alto">5×3=15</td></tr>
+  <tr><td>R08</td><td>A10, A09</td><td>Borrado de respaldos antes del cifrado</td><td>V06, V05; servidor de respaldo en el dominio [S]</td><td>Centro alterno de procesamiento (CAPD) [14]; DRP [12]</td><td class="c alto">3×5=15</td></tr>
+  <tr><td>R09</td><td>A03</td><td>Explotación de SAP expuesto</td><td>V07; parches SAP tardíos [S]</td><td>Controles financieros y auditoría interna [14]</td><td class="c alto">3×4=12</td></tr>
+  <tr><td>R10</td><td>A12</td><td>Explotación de interfaces web de routers</td><td>V08; HTTP habilitado [S]</td><td>Enlaces redundantes [S]</td><td class="c alto">3×4=12</td></tr>
+  <tr><td>R11</td><td>A01, A02, A03</td><td>Proveedor comprometido usado como puente</td><td>Accesos permanentes y cuentas compartidas [S]</td><td>Política de relacionamiento con proveedores [5]; cláusulas de datos personales [8]</td><td class="c alto">3×4=12</td></tr>
+  <tr><td>R12</td><td>A05</td><td>Fuga desde ambientes no productivos o terceros</td><td>Copias reales sin enmascarar [S]</td><td>Lineamiento de datos personales [8]</td><td class="c medio">3×3=9</td></tr>
+  </tbody>
+</table>
+<div class="avoid"><table>
+  <caption>Tabla 11b. Tratamiento, controles propuestos, responsables, plazos y riesgo residual esperado.</caption>
+  <thead><tr><th style="width:5%">ID</th><th style="width:13%">Tratamiento</th><th style="width:29%">Controles propuestos (acción · Anexo A)</th><th style="width:22%">Responsable [S]</th><th style="width:11%">Plazo</th><th class="c" style="width:12%">Residual (P×I)</th></tr></thead>
+  <tbody>
+  <tr><td>R01</td><td>Mitigar y transferir (póliza ciber)</td><td>AC-01, AC-03, AC-04, AC-06, AC-11 · 5.17, 8.2, 8.13, 8.16, 5.26</td><td>Director de Ciberseguridad</td><td>0–12 meses</td><td class="c medio">2×4=8 Medio</td></tr>
+  <tr><td>R02</td><td>Mitigar</td><td>AC-01, AC-02 · 8.5, 8.8, 8.20</td><td>Jefe de Redes y Seguridad Perimetral</td><td>0–3 meses</td><td class="c medio">2×4=8 Medio</td></tr>
+  <tr><td>R03</td><td>Mitigar</td><td>AC-05, AC-06, AC-10, AC-11 · 8.22, 8.20, 5.15, 5.21</td><td>Gerente de Operación de Energía</td><td>0–12 meses</td><td class="c alto">2×5=10 Alto</td></tr>
+  <tr><td>R04</td><td>Mitigar</td><td>AC-02, AC-05 · 8.22, 8.9, 5.17</td><td>Gerente de Provisión de Aguas</td><td>0–6 meses</td><td class="c medio">1×5=5 Medio</td></tr>
+  <tr><td>R05</td><td>Mitigar y transferir (póliza ciber)</td><td>AC-01, AC-06, AC-08 · 8.24, 8.12, 5.34, 8.16</td><td>Jefe de la Unidad de Cumplimiento</td><td>0–12 meses</td><td class="c medio">2×4=8 Medio</td></tr>
+  <tr><td>R06</td><td>Mitigar</td><td>AC-03, AC-06 · 8.2, 5.18, 8.5</td><td>Jefe de Infraestructura TI</td><td>3–12 meses</td><td class="c medio">1×5=5 Medio</td></tr>
+  <tr><td>R07</td><td>Mitigar</td><td>AC-07 · 5.14, 5.7, 6.3</td><td>Jefe de Canales Digitales y VP Finanzas</td><td>0–6 meses</td><td class="c medio">3×2=6 Medio</td></tr>
+  <tr><td>R08</td><td>Mitigar</td><td>AC-03, AC-04 · 8.13, 8.14, 5.30</td><td>Jefe de Continuidad de TI</td><td>0–9 meses</td><td class="c bajo">1×4=4 Bajo</td></tr>
+  <tr><td>R09</td><td>Mitigar</td><td>AC-02, AC-09 · 8.8, 8.9, 5.3</td><td>Gerente de Tecnologías y Procesos</td><td>0–6 meses</td><td class="c medio">2×3=6 Medio</td></tr>
+  <tr><td>R10</td><td>Mitigar</td><td>AC-02 · 8.20, 8.9</td><td>Jefe de Telecomunicaciones</td><td>0–3 meses</td><td class="c bajo">1×4=4 Bajo</td></tr>
+  <tr><td>R11</td><td>Mitigar</td><td>AC-05, AC-10 · 5.19, 5.20, 5.22</td><td>Gerente de Abastecimiento</td><td>0–12 meses</td><td class="c medio">2×3=6 Medio</td></tr>
+  <tr><td>R12</td><td>Evitar (eliminar la práctica)</td><td>AC-08 · 8.11, 8.31, 8.33</td><td>Jefe de la Unidad de Cumplimiento</td><td>6–12 meses</td><td class="c bajo">1×3=3 Bajo</td></tr>
+  </tbody>
+</table></div>
+<p>El impacto baja solo cuando el control limita el daño (respaldos inmutables, cifrado, segmentación, verificación de pagos). En R03, R04 y R06 el impacto no baja porque, si el evento ocurre, la consecuencia sigue siendo máxima; ahí se reduce sobre todo la probabilidad.</p>
+
+<!-- ============ 7. MAPA DE CALOR ============ -->
+<h1 id="s7">7. Actividad 6: Mapa de calor inherente y residual</h1>
+<p>Cada celda tiene el valor P×I y su color: verde = bajo (1–4), amarillo = medio (5–9), naranja = alto (10–16) y rojo = crítico (20–25). Los riesgos se ubican según las tablas 10 y 11b.</p>
+<div class="maps avoid">
+<div>
+<div class="hmtitle">Figura 1a. Riesgo inherente</div>
+<table class="hm">
+  <thead><tr><th style="width:15%">P \ I</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+  <tbody>
+  <tr><th>5</th><td class="medio"><span>5</span></td><td class="alto"><span>10</span></td><td class="alto"><span>15</span><b>R07</b></td><td class="crit"><span>20</span></td><td class="crit"><span>25</span></td></tr>
+  <tr><th>4</th><td class="bajo"><span>4</span></td><td class="medio"><span>8</span></td><td class="alto"><span>12</span></td><td class="alto"><span>16</span><b>R02</b></td><td class="crit"><span>20</span><b>R01 R05</b></td></tr>
+  <tr><th>3</th><td class="bajo"><span>3</span></td><td class="medio"><span>6</span></td><td class="medio"><span>9</span><b>R12</b></td><td class="alto"><span>12</span><b>R09 R10 R11</b></td><td class="alto"><span>15</span><b>R03 R04 R06 R08</b></td></tr>
+  <tr><th>2</th><td class="bajo"><span>2</span></td><td class="bajo"><span>4</span></td><td class="medio"><span>6</span></td><td class="medio"><span>8</span></td><td class="alto"><span>10</span></td></tr>
+  <tr><th>1</th><td class="bajo"><span>1</span></td><td class="bajo"><span>2</span></td><td class="bajo"><span>3</span></td><td class="bajo"><span>4</span></td><td class="medio"><span>5</span></td></tr>
+  </tbody>
+</table>
+</div>
+<div>
+<div class="hmtitle">Figura 1b. Riesgo residual esperado</div>
+<table class="hm">
+  <thead><tr><th style="width:15%">P \ I</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th></tr></thead>
+  <tbody>
+  <tr><th>5</th><td class="medio"><span>5</span></td><td class="alto"><span>10</span></td><td class="alto"><span>15</span></td><td class="crit"><span>20</span></td><td class="crit"><span>25</span></td></tr>
+  <tr><th>4</th><td class="bajo"><span>4</span></td><td class="medio"><span>8</span></td><td class="alto"><span>12</span></td><td class="alto"><span>16</span></td><td class="crit"><span>20</span></td></tr>
+  <tr><th>3</th><td class="bajo"><span>3</span></td><td class="medio"><span>6</span><b>R07</b></td><td class="medio"><span>9</span></td><td class="alto"><span>12</span></td><td class="alto"><span>15</span></td></tr>
+  <tr><th>2</th><td class="bajo"><span>2</span></td><td class="bajo"><span>4</span></td><td class="medio"><span>6</span><b>R09 R11</b></td><td class="medio"><span>8</span><b>R01 R02 R05</b></td><td class="alto"><span>10</span><b>R03</b></td></tr>
+  <tr><th>1</th><td class="bajo"><span>1</span></td><td class="bajo"><span>2</span></td><td class="bajo"><span>3</span><b>R12</b></td><td class="bajo"><span>4</span><b>R08 R10</b></td><td class="medio"><span>5</span><b>R04 R06</b></td></tr>
+  </tbody>
+</table>
+</div>
+</div>
+<div class="avoid"><table style="width:70%; margin-left:auto; margin-right:auto;">
+  <caption>Tabla 12. Conteo de riesgos por nivel.</caption>
+  <thead><tr><th>Nivel</th><th class="c">Inherente</th><th class="c">Residual esperado</th></tr></thead>
+  <tbody>
+  <tr><td class="crit">Crítico (20–25)</td><td class="c">2 (R01, R05)</td><td class="c">0</td></tr>
+  <tr><td class="alto">Alto (10–16)</td><td class="c">9</td><td class="c">1 (R03)</td></tr>
+  <tr><td class="medio">Medio (5–9)</td><td class="c">1 (R12)</td><td class="c">8</td></tr>
+  <tr><td class="bajo">Bajo (1–4)</td><td class="c">0</td><td class="c">3 (R08, R10, R12)</td></tr>
+  <tr><th>Total</th><th class="c">12</th><th class="c">12</th></tr>
+  </tbody>
+</table></div>
+<p>El mapa inherente se concentra en la parte alta y derecha porque EPM opera infraestructura crítica y ya sufrió un ataque. Después del plan ningún riesgo queda crítico. R03 se mantiene alto porque el impacto de un sabotaje al SCADA de energía no se puede reducir con controles de TI; por eso se propone aceptarlo de forma explícita en la junta y revisarlo cada trimestre.</p>
+
+<!-- ============ 8. PLAN ============ -->
+<h1 id="s8">8. Actividad 7: Plan de tratamiento de riesgos</h1>
+<p>El plan tiene 11 acciones en 12 meses. Los montos son estimaciones ficticias [S] que incluyen licencias, servicios e implementación; no incluyen la póliza de ciberriesgo, que se cotiza aparte.</p>
+<table>
+  <caption>Tabla 13. Plan de tratamiento (recursos en millones de COP [S]).</caption>
+  <thead><tr><th style="width:5.5%">ID</th><th style="width:27%">Acción concreta</th><th style="width:9%">Anexo A</th><th style="width:13%">Responsable [S]</th><th style="width:7%" class="c">Recursos</th><th style="width:7%">Plazo</th><th>Indicador (meta)</th><th style="width:9%">Riesgos</th></tr></thead>
+  <tbody>
+  <tr><td>AC-01</td><td>MFA resistente a phishing en VPN, correo, consolas y cuentas privilegiadas; bloquear autenticación heredada; reautenticación en sesiones VPN.</td><td>5.17, 8.5</td><td>Director de Ciberseguridad</td><td class="c">900</td><td>0–3 m</td><td>% de cuentas con MFA (100 % privilegiadas y remotas; 98 % del total).</td><td>R01, R02, R05</td></tr>
+  <tr><td>AC-02</td><td>Gestión de la superficie expuesta (RI-03): escaneo externo mensual, cierre de interfaces de administración y parcheo de vulnerabilidades KEV en equipos de borde, routers, SAP y PLC.</td><td>5.9, 8.8, 8.9, 8.20</td><td>Jefe de Redes y Seguridad Perimetral</td><td class="c">350</td><td>0–3 m y continuo</td><td>KEV en activos expuestos corregidas en ≤ 7 días (100 %); interfaces admin expuestas (0).</td><td>R02, R04, R09, R10</td></tr>
+  <tr><td>AC-03</td><td>Administración por niveles (RI-02): bóveda de credenciales (PAM) con sesión grabada, estaciones de administración, ESXi y respaldos fuera del dominio, AD CS endurecido.</td><td>5.18, 8.2, 8.5</td><td>Jefe de Infraestructura TI</td><td class="c">1.200</td><td>3–9 m</td><td>Cuentas con privilegio de dominio (−80 %); sesiones admin por PAM (100 %).</td><td>R01, R06, R08</td></tr>
+  <tr><td>AC-04</td><td>Respaldos 3-2-1-1-0: copia inmutable y otra fuera de línea; Veeam actualizado; prueba trimestral de restauración, incluido un Directorio Activo limpio.</td><td>8.13, 8.14, 5.30</td><td>Jefe de Continuidad de TI</td><td class="c">1.500</td><td>0–6 m</td><td>Sistemas críticos con copia inmutable (100 %); RTO probado de prepago ≤ 24 h.</td><td>R01, R08</td></tr>
+  <tr><td>AC-05</td><td>Segmentación TI/OT por zonas y conductos (IEC 62443) con DMZ industrial y bastión (RI-01); retirar PLC/HMI de internet y cambiar contraseñas por defecto en 30 días.</td><td>5.15, 8.20, 8.22</td><td>Gerentes de Operación de Energía y de Aguas</td><td class="c">3.500</td><td>0–12 m</td><td>Plantas con segmentación validada (100 %); conexiones remotas OT fuera del bastión (0).</td><td>R03, R04, R11</td></tr>
+  <tr><td>AC-06</td><td>Registros al SOC con retención de 12 meses (RI-04) y monitoreo pasivo de redes OT integrado al SOC.</td><td>8.15, 8.16, 8.17</td><td>Director de Ciberseguridad (SOC)</td><td class="c">1.800</td><td>3–12 m</td><td>Fuentes críticas enviando registros (95 %); tiempo de detección &lt; 24 h.</td><td>R01, R03, R05, R06</td></tr>
+  <tr><td>AC-07</td><td>Antifraude y marca (RI-05): DMARC <i>reject</i>, baja de sitios falsos, verificación de pagos por doble canal y simulaciones de phishing trimestrales.</td><td>5.7, 5.14, 6.3</td><td>Jefe de Canales Digitales y VP Finanzas</td><td class="c">400</td><td>0–6 m</td><td>Clic en simulaciones &lt; 5 %; baja de sitios falsos &lt; 24 h; pagos fraudulentos (0).</td><td>R07</td></tr>
+  <tr><td>AC-08</td><td>Protección de datos de clientes: cifrado de bases, prevención de fuga (DLP) y enmascaramiento en ambientes no productivos (RI-06).</td><td>5.34, 8.11, 8.12, 8.24, 8.33</td><td>Jefe de la Unidad de Cumplimiento</td><td class="c">900</td><td>6–12 m</td><td>Bases de clientes cifradas (100 %); ambientes no productivos sin datos reales (100 %).</td><td>R05, R12</td></tr>
+  <tr><td>AC-09</td><td>Seguridad SAP: notas de seguridad mensuales, desactivar componentes no usados, segregación de funciones y monitoreo de transacciones críticas.</td><td>5.3, 8.8, 8.9</td><td>Gerente de Tecnologías y Procesos</td><td class="c">600</td><td>0–6 m</td><td>Notas «Hot News» aplicadas en ≤ 30 días (100 %); conflictos de segregación (−90 %).</td><td>R09</td></tr>
+  <tr><td>AC-10</td><td>Proveedores con acceso: anexo de seguridad (aviso de incidentes en 24 h, MFA, derecho de auditoría), cuentas nominales con vencimiento y evaluación anual de integradores OT.</td><td>5.19, 5.20, 5.21, 5.22</td><td>Gerente de Abastecimiento</td><td class="c">300</td><td>3–12 m</td><td>Contratos críticos con anexo (100 %); proveedores críticos evaluados (100 %).</td><td>R03, R11</td></tr>
+  <tr><td>AC-11</td><td>Respuesta a incidentes: guías para ransomware y OT, contrato de respuesta con un tercero, operación manual de prepago y simulacro anual con la junta.</td><td>5.24, 5.26, 5.27, 5.29</td><td>Director de Ciberseguridad y VP Riesgos</td><td class="c">700</td><td>0–6 m</td><td>Simulacros al año (≥ 2); activación del comité de crisis &lt; 1 h.</td><td>R01, R03</td></tr>
+  <tr><th colspan="4" style="text-align:right">Total</th><th class="c">12.150</th><th colspan="3"></th></tr>
+  </tbody>
+</table>
+
+<h2>8.1 Resultados esperados por fase</h2>
+<table>
+  <caption>Tabla 14. Reducción esperada del riesgo por fase (inherente → residual).</caption>
+  <thead><tr><th style="width:15%">Fase</th><th style="width:30%">Acciones principales</th><th>Riesgos que bajan</th></tr></thead>
+  <tbody>
+  <tr><td>Fase 1 (0–3 meses)</td><td>AC-01, AC-02 y primeras tareas de AC-05, AC-07 y AC-11</td><td>R02 (16 → 8) y R10 (12 → 4). Se cierran los accesos más expuestos.</td></tr>
+  <tr><td>Fase 2 (3–6 meses)</td><td>AC-04, AC-07, AC-09, AC-11 y AC-05 en agua</td><td>R04 (15 → 5), R07 (15 → 6) y R09 (12 → 6).</td></tr>
+  <tr><td>Fase 3 (6–12 meses)</td><td>AC-03, AC-05 en energía, AC-06, AC-08 y AC-10</td><td>R01 (20 → 8), R03 (15 → 10), R05 (20 → 8), R06 (15 → 5), R08 (15 → 4), R11 (12 → 6) y R12 (9 → 3).</td></tr>
+  </tbody>
+</table>
+<p>El seguimiento se haría con un tablero trimestral para el Comité de Auditoría y Riesgos de la Junta con los indicadores de la Tabla 13. Para la gestión del sistema, los controles nuevos se agregan a la declaración de aplicabilidad del SGSI que EPM menciona en sus documentos [6, 8].</p>
+
+<!-- ============ 9. INCIDENTE ============ -->
+<h1 id="s9">9. Actividad 8: Caso de incidente (escenario ficticio [S])</h1>
+<h2>9.1 Contexto</h2>
+<p>Un viernes de puente festivo un grupo de ransomware como servicio usa un token de sesión robado de un controlador de acceso remoto sin parchear (tipo V01) y entra como un contratista de soporte, sin que se le pida MFA. Durante la noche explora la red, usa una falla tipo V04 para hacerse administrador del dominio, desactiva el antivirus y copia 380 GB de servidores de archivos y de una réplica de la base de clientes (A05). El domingo a las 02:00 cifra el clúster de virtualización (A09) que soporta el sistema comercial, el portal y las recargas de prepago. Solo el 60 % de los sistemas tenía copia inmutable. Los centros de control OT siguen operando porque están en otra red, pero comparten algunos servicios de dominio [S].</p>
+<div class="avoid"><table>
+  <caption>Tabla 15. Línea de tiempo del escenario [S].</caption>
+  <thead><tr><th style="width:18%">Momento</th><th>Evento</th></tr></thead>
+  <tbody>
+  <tr><td>Viernes 21:40</td><td>Inicio de sesión VPN del contratista desde una IP extranjera reutilizando una sesión válida.</td></tr>
+  <tr><td>Sábado 03:15</td><td>Creación de una cuenta y emisión de un certificado anómalo en AD CS; el SOC lo registra como alerta media sin escalar.</td></tr>
+  <tr><td>Sábado 04:00–18:00</td><td>Salida de 380 GB hacia un servicio de almacenamiento en la nube.</td></tr>
+  <tr><td>Domingo 02:00</td><td>Apagado y cifrado de 140 máquinas virtuales; nota de rescate con amenaza de publicar datos.</td></tr>
+  <tr><td>Domingo 02:20</td><td>El SOC detecta el apagado masivo; 02:50 se activa el comité de crisis.</td></tr>
+  </tbody>
+</table></div>
+<h2>9.2 Contención (primeras 6 horas)</h2>
+<ul>
+  <li>Cortar la VPN y las conexiones a internet del centro de datos; deshabilitar las cuentas del contratista y las creadas por el atacante; revocar el certificado emitido.</li>
+  <li>Cerrar los conductos entre TI y OT. Los centros de control pasan a operación aislada y se verifica que la lógica de los controladores no haya cambiado.</li>
+  <li>Aislar los hipervisores afectados sin borrarlos; tomar memoria y discos para la investigación. Proteger de inmediato el repositorio de respaldos.</li>
+  <li>Activar la contingencia comercial: recargas de prepago por aliados externos, como se hizo en 2022 [18], y mensajes a clientes por canales oficiales.</li>
+</ul>
+<h2>9.3 Investigación (6 horas a 10 días)</h2>
+<ul>
+  <li>Activar el contrato de respuesta a incidentes (AC-11) y reconstruir la línea de tiempo con los registros centralizados (RI-04): punto de entrada, cuentas usadas, persistencia y datos copiados.</li>
+  <li>Determinar qué datos personales salieron y de cuántos titulares, para decidir las notificaciones.</li>
+  <li>Denuncia ante la Fiscalía por acceso abusivo, daño informático, uso de software malicioso y violación de datos personales (Ley 1273 de 2009, arts. 269A, 269D, 269E y 269F) [43]; reporte al ColCERT [44]; informe a la SSPD por la afectación del servicio.</li>
+  <li>Reporte a la SIC de la violación de los códigos de seguridad (Ley 1581, art. 17, lit. n) [42] y aviso a los titulares afectados.</li>
+  <li>Decisión de la junta, asesorada por el comité de crisis: no pagar el rescate [S], porque no garantiza la recuperación ni la no publicación.</li>
+</ul>
+<h2>9.4 Recuperación (día 1 a día 14)</h2>
+<ul>
+  <li>Reconstruir primero un Directorio Activo limpio desde la copia fuera de línea y rotar todas las credenciales (incluida la cuenta krbtgt dos veces).</li>
+  <li>Restaurar por prioridad de negocio: identidades → facturación y prepago (meta 72 h [S]) → portal y app → ERP → resto. Cada servidor se revisa antes de volver a la red.</li>
+  <li>Reabrir la VPN solo con MFA y equipos parcheados; monitoreo reforzado durante 30 días.</li>
+</ul>
+<h2>9.5 Prevención y lecciones aprendidas</h2>
+<p>En dos semanas se hace una revisión post-incidente (control 5.27) que alimenta el plan: parcheo de borde en 7 días y reautenticación de sesiones (AC-01, AC-02), administración por niveles y AD CS endurecido (AC-03), 100 % de copias inmutables (AC-04), alertas de AD CS escaladas automáticamente por el SOC (AC-06) y un simulacro con la junta usando este mismo escenario (AC-11).</p>
+
+<!-- ============ 10. CONCLUSIONES ============ -->
+<h1 id="s10">10. Actividad 9: Conclusiones</h1>
+<p>Los tres riesgos prioritarios para EPM son:</p>
+<ol>
+  <li><b>R01 – Ransomware en TI (20, crítico → 8, medio).</b> Ya ocurrió en 2022 y afectó a cientos de miles de familias. Las medidas que más lo reducen son MFA (AC-01), administración por niveles (AC-03) y respaldos inmutables probados (AC-04), porque atacan los tres pasos del ataque: entrada, escalamiento y destrucción de la recuperación.</li>
+  <li><b>R05 – Filtración de datos de 3,05 M de clientes (20, crítico → 8, medio).</b> Hoy el ransomware casi siempre roba datos antes de cifrar, como pasó en 2022. Además del cumplimiento de la Ley 1581, el cifrado de bases, la prevención de fuga y la prohibición de datos reales en pruebas (AC-08, RI-06) reducen cuánto se puede robar.</li>
+  <li><b>R02 – Compromiso del acceso remoto y del perímetro (16, alto → 8, medio).</b> Es la puerta de entrada de los dos anteriores: V01 y V02 se explotaron en masa y no requieren contraseña. Parchear los equipos de borde en 7 días y controlar la superficie expuesta (AC-02, RI-03) es lo más barato y rápido del plan.</li>
+</ol>
+<p>Además, R03 (sabotaje del SCADA de energía) es el único riesgo que queda alto. Su probabilidad es menor, pero sus efectos son físicos y nacionales, por lo que la segmentación TI/OT con bastión (AC-05, RI-01) debe tener financiación estable y seguimiento directo de la junta.</p>
+<p>En general, EPM tiene buena base de gobierno (estrategia de ciberseguridad, SOC, DRP en desarrollo y auditorías de TO), pero sus políticas públicas son declaraciones amplias. Las seis reglas propuestas convierten esas declaraciones en obligaciones verificables. Como limitación, este análisis se hizo solo con información pública: el inventario, los responsables y los montos son supuestos y deben validarse con la información interna del SGSI de EPM.</p>
+
+<!-- ============ ANEXO: CONTROLES ============ -->
+<h2>Anexo. Controles del Anexo A de ISO/IEC 27001:2022 citados</h2>
+<table class="small">
+  <thead><tr><th style="width:7%">Control</th><th>Nombre</th><th style="width:7%">Control</th><th>Nombre</th></tr></thead>
+  <tbody>
+  <tr><td>5.3</td><td>Segregación de funciones</td><td>8.2</td><td>Derechos de acceso privilegiado</td></tr>
+  <tr><td>5.7</td><td>Inteligencia de amenazas</td><td>8.5</td><td>Autenticación segura</td></tr>
+  <tr><td>5.9</td><td>Inventario de información y otros activos asociados</td><td>8.8</td><td>Gestión de vulnerabilidades técnicas</td></tr>
+  <tr><td>5.14</td><td>Transferencia de información</td><td>8.9</td><td>Gestión de la configuración</td></tr>
+  <tr><td>5.15</td><td>Control de acceso</td><td>8.11</td><td>Enmascaramiento de datos</td></tr>
+  <tr><td>5.17</td><td>Información de autenticación</td><td>8.12</td><td>Prevención de fuga de datos</td></tr>
+  <tr><td>5.18</td><td>Derechos de acceso</td><td>8.13</td><td>Respaldo de la información</td></tr>
+  <tr><td>5.19</td><td>Seguridad de la información en las relaciones con proveedores</td><td>8.14</td><td>Redundancia de las instalaciones de procesamiento</td></tr>
+  <tr><td>5.20</td><td>Seguridad en los acuerdos con proveedores</td><td>8.15</td><td>Registro (logging)</td></tr>
+  <tr><td>5.21</td><td>Seguridad en la cadena de suministro de TIC</td><td>8.16</td><td>Actividades de monitoreo</td></tr>
+  <tr><td>5.22</td><td>Seguimiento y gestión de cambios de servicios de proveedores</td><td>8.17</td><td>Sincronización de relojes</td></tr>
+  <tr><td>5.24</td><td>Planificación y preparación de la gestión de incidentes</td><td>8.20</td><td>Seguridad de redes</td></tr>
+  <tr><td>5.26</td><td>Respuesta a incidentes</td><td>8.21</td><td>Seguridad de los servicios de red</td></tr>
+  <tr><td>5.27</td><td>Aprendizaje de los incidentes</td><td>8.22</td><td>Segregación de redes</td></tr>
+  <tr><td>5.28</td><td>Recolección de evidencia</td><td>8.24</td><td>Uso de criptografía</td></tr>
+  <tr><td>5.29</td><td>Seguridad de la información durante una disrupción</td><td>8.31</td><td>Separación de ambientes de desarrollo, prueba y producción</td></tr>
+  <tr><td>5.30</td><td>Preparación de las TIC para la continuidad del negocio</td><td>8.33</td><td>Información de prueba</td></tr>
+  <tr><td>5.34</td><td>Privacidad y protección de datos personales</td><td>6.3</td><td>Concienciación, educación y formación</td></tr>
+  </tbody>
+</table>
+
+<!-- ============ REFERENCIAS ============ -->
+<h1 id="refs">Referencias</h1>
+<ol class="refs">
+  <li>ISO/IEC. <i>ISO/IEC 27001:2022. Information security, cybersecurity and privacy protection – Information security management systems – Requirements.</i> Ginebra: ISO, 2022.</li>
+  <li>ISO. <i>ISO 31000:2018. Risk management – Guidelines.</i> Ginebra: ISO, 2018.</li>
+  <li>ISO/IEC. <i>ISO/IEC 27005:2022. Guidance on managing information security risks.</i> Ginebra: ISO, 2022.</li>
+  <li>IEC. <i>IEC 62443-3-3:2013. Industrial communication networks – Network and system security – System security requirements and security levels.</i> Ginebra: IEC, 2013.</li>
+  <li>EPM. «Políticas» (sitio institucional). https://www.epm.com.co/institucional/sobre-epm/quienes-somos/politicas (consultado el 29/10/2026).</li>
+  <li>EPM. Lineamiento 2023-LINGG-115, «Proceso Seguridad Digital y Continuidad de los Servicios de Tecnología», 23/02/2023 (enlazado como Política de seguridad de la información y ciberseguridad del Grupo EPM). https://www.epm.com.co/content/dam/epm/institucional/documentos/todos/politica-de-seguridad-de-la-informacion-y-ciberseguridad-para-el-grupo-epm.pdf</li>
+  <li>EPM, Dirección de Ciberseguridad. «Estrategia Seguridad de la información y Ciberseguridad 2024–2027». https://www.epm.com.co/content/dam/epm/institucional/transparencia/documentos/estrategia-ciberseguridad.pdf</li>
+  <li>EPM. Decreto 2013-DECGGL-1946 y «Lineamiento sobre Protección de Datos Personales», rev. 003 (23/09/2019). https://www.epm.com.co/content/dam/epm/institucional/documentos/todos/politica-de-privacidad.pdf</li>
+  <li>EPM, Secretaría General. Certificación de la «Política de Gestión Ética y Cumplimiento» (Acta 1801 de Junta, 01/10/2024). https://www.epm.com.co/content/dam/epm/institucional/sobre-epm/qui%C3%A9nes-somos/politicas/certificado-politica-gestion-etica-y-cumplimiento.pdf</li>
+  <li>EPM. «Código de Ética del Grupo EPM». https://www.epm.com.co/content/dam/epm/institucional/sobre-epm/gobierno-corporativo/c%C3%B3digo-de-%C3%A9tica/codigo-etica-epm%20(1).pdf</li>
+  <li>EPM. «Política de cero tolerancia frente al fraude, la corrupción y el soborno». https://www.epm.com.co/content/dam/epm/institucional/documentos/todos/politica-cero-tolerancia.pdf</li>
+  <li>EPM, Gerencia Tecnologías y Procesos. «Plan Estratégico Integrado 2026» (PETI). https://www.epm.com.co/content/dam/epm/institucional/transparencia/documentos/gti-peti-2026.pdf</li>
+  <li>EPM, Secretaría de Junta Directiva. Certificación de la «Política de Seguridad de EPM» (Acta 1655, 18/12/2018). https://www.epm.com.co/content/dam/epm/institucional/documentos/todos/politica-de-seguridad-epm.pdf</li>
+  <li>EPM, Auditoría Corporativa. Relación de trabajos de auditoría (publicada el 10/09/2026). https://www.epm.com.co/content/dam/epm/institucional/sobre-epm/gobierno-corporativo/marco-general-de-gobierno-/mecanismos-de-contr%C3%B3l-/Informes-auditoria-10-09-2026.pdf</li>
+  <li>Grupo EPM. «Informe de Sostenibilidad 2025». https://sostenibilidadgrupoepm.com.co/wp-content/uploads/2026/08/V2_00_UNIF_INFORME_SOSTE_ESP_2025_.pdf</li>
+  <li>Abrams, L. «Colombian energy supplier EPM hit by BlackCat ransomware attack». <i>BleepingComputer</i>, 16/12/2022. https://www.bleepingcomputer.com/news/security/colombian-energy-supplier-epm-hit-by-blackcat-ransomware-attack/</li>
+  <li>Guerrero Arango, Á. «Gato negro: así operan los cibermercenarios que atacaron a EPM». <i>El Colombiano</i>, 18/12/2022. https://www.elcolombiano.com/antioquia/ciberataque-a-epm-fue-por-grubo-de-ciberdelincuentes-blackcat-ML19657803</li>
+  <li>Valora Analitik. «Ciberataque a EPM: ¿qué ha pasado con las investigaciones y soluciones?», 21/12/2022. https://www.valoraanalitik.com/ciberataque-a-epm-que-ha-pasado-con-las-investigaciones-y-soluciones/</li>
+  <li>CISA. «Known Exploited Vulnerabilities Catalog», versión 2026.10.29. https://www.cisa.gov/known-exploited-vulnerabilities-catalog</li>
+  <li>NIST NVD. CVE-2023-4966. https://nvd.nist.gov/vuln/detail/CVE-2023-4966</li>
+  <li>Citrix. CTX579459, «NetScaler ADC and NetScaler Gateway Security Bulletin for CVE-2023-4966 and CVE-2023-4967». https://support.citrix.com/article/CTX579459</li>
+  <li>CISA. AA23-325A, «#StopRansomware: LockBit 3.0 Ransomware Affiliates Exploit CVE 2023-4966 Citrix Bleed Vulnerability», 21/11/2023. https://www.cisa.gov/news-events/cybersecurity-advisories/aa23-325a</li>
+  <li>NIST NVD. CVE-2024-3400. https://nvd.nist.gov/vuln/detail/CVE-2024-3400</li>
+  <li>Palo Alto Networks. «CVE-2024-3400 PAN-OS: Arbitrary File Creation Leads to OS Command Injection Vulnerability in GlobalProtect». https://security.paloaltonetworks.com/CVE-2024-3400</li>
+  <li>NIST NVD. CVE-2022-41082. https://nvd.nist.gov/vuln/detail/CVE-2022-41082</li>
+  <li>Microsoft MSRC. «CVE-2022-41082 Microsoft Exchange Server Remote Code Execution Vulnerability». https://msrc.microsoft.com/update-guide/vulnerability/CVE-2022-41082</li>
+  <li>NIST NVD. CVE-2022-26923. https://nvd.nist.gov/vuln/detail/CVE-2022-26923</li>
+  <li>Microsoft MSRC. «CVE-2022-26923 Active Directory Domain Services Elevation of Privilege Vulnerability». https://msrc.microsoft.com/update-guide/vulnerability/CVE-2022-26923</li>
+  <li>NIST NVD. CVE-2024-37085. https://nvd.nist.gov/vuln/detail/CVE-2024-37085</li>
+  <li>Broadcom (VMware). VMSA-2024-0013. https://support.broadcom.com/web/ecx/support-content-notification/-/external/content/SecurityAdvisories/0/24505</li>
+  <li>Microsoft Threat Intelligence. «Ransomware operators exploit ESXi hypervisor vulnerability for mass encryption», 29/07/2024. https://www.microsoft.com/en-us/security/blog/2024/07/29/ransomware-operators-exploit-esxi-hypervisor-vulnerability-for-mass-encryption/</li>
+  <li>NIST NVD. CVE-2024-40711. https://nvd.nist.gov/vuln/detail/CVE-2024-40711</li>
+  <li>Veeam. KB4649, «Veeam Security Bulletin (September 2024)». https://www.veeam.com/kb4649</li>
+  <li>NIST NVD. CVE-2025-31324. https://nvd.nist.gov/vuln/detail/CVE-2025-31324</li>
+  <li>Onapsis. «Active Exploitation of SAP Vulnerability CVE-2025-31324». https://onapsis.com/blog/active-exploitation-of-sap-vulnerability-cve-2025-31324/</li>
+  <li>NIST NVD. CVE-2023-20198. https://nvd.nist.gov/vuln/detail/CVE-2023-20198</li>
+  <li>Cisco. «Multiple Vulnerabilities in Cisco IOS XE Software Web UI Feature» (cisco-sa-iosxe-webui-privesc-j22SaA4z). https://sec.cloudapps.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-iosxe-webui-privesc-j22SaA4z</li>
+  <li>NIST NVD. CVE-2023-6448. https://nvd.nist.gov/vuln/detail/CVE-2023-6448</li>
+  <li>CISA. «Exploitation of Unitronics PLCs used in Water and Wastewater Systems», 28/11/2023. https://www.cisa.gov/news-events/alerts/2023/11/28/exploitation-unitronics-plcs-used-water-and-wastewater-systems</li>
+  <li>NIST NVD. CVE-2021-22681. https://nvd.nist.gov/vuln/detail/CVE-2021-22681</li>
+  <li>CISA. ICSA-21-056-03, «Rockwell Automation Logix Controllers (Update A)». https://www.cisa.gov/news-events/ics-advisories/icsa-21-056-03</li>
+  <li>Congreso de la República de Colombia. Ley 1581 de 2012, por la cual se dictan disposiciones generales para la protección de datos personales. http://www.secretariasenado.gov.co/senado/basedoc/ley_1581_2012.html</li>
+  <li>Congreso de la República de Colombia. Ley 1273 de 2009, por medio de la cual se modifica el Código Penal y se crea el bien jurídico de la protección de la información y de los datos. http://www.secretariasenado.gov.co/senado/basedoc/ley_1273_2009.html</li>
+  <li>Presidencia de la República de Colombia. Decreto 338 de 2022, lineamientos para fortalecer la gobernanza de la seguridad digital.</li>
+</ol>
+
+</main>
+</body>
+</html>

@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Taller Gobuster — Enumeración web en Metasploitable 2</title>
+<style>
+@page { size: letter; margin: 0.7in 0.62in 0.8in 0.62in;
+  @bottom-center { content: counter(page); font: 9pt "Times New Roman", serif; } }
+* { box-sizing: border-box; }
+body { font-family: "Times New Roman", Times, serif; font-size: 10pt; line-height: 1.2; color: #000; margin: 0; text-align: justify; hyphens: auto; }
+h1.title { font-size: 22pt; font-weight: normal; text-align: center; line-height: 1.1; margin: 0 0 10pt; }
+.authors { text-align: center; font-size: 10pt; line-height: 1.3; margin-bottom: 14pt; }
+.authors .name { font-size: 11pt; }
+.cols { column-count: 2; column-gap: 0.24in; }
+.abstract, .keywords { font-size: 9pt; font-weight: bold; margin-bottom: 6pt; text-indent: 0; }
+.abstract i, .keywords i { font-weight: bold; }
+h2 { font-size: 10pt; font-weight: normal; font-variant: small-caps; text-align: center; margin: 8pt 0 3pt; break-after: avoid; letter-spacing: .3pt; }
+h3 { font-size: 10pt; font-weight: normal; font-style: italic; margin: 6pt 0 3pt; break-after: avoid; }
+p { margin: 0 0 3pt; text-indent: 1.2em; }
+p.ni { text-indent: 0; text-align: left; }
+.keep { display: inline-block; width: 100%; }
+ul, ol { margin: 2pt 0 4pt; padding-left: 1.4em; }
+li { margin-bottom: 1.5pt; }
+code { font-family: Consolas, "Courier New", monospace; font-size: 8.6pt; }
+figure { margin: 5pt 0 6pt; break-inside: avoid; }
+figure.wide { column-span: all; }
+figcaption { font-size: 8pt; margin-top: 3pt; text-align: justify; }
+pre.term { background: #1b1d27; color: #e4e4e4; font: 6.4pt/1.28 Consolas, "DejaVu Sans Mono", monospace; padding: 5pt 6pt; margin: 0; border-radius: 3pt; white-space: pre-wrap; word-break: break-word; text-align: left; }
+pre.term .p1 { color: #4fb3ff; } pre.term .p2 { color: #4fb3ff; } pre.term .c { color: #fff; font-weight: bold; }
+pre.term .ok { color: #7ee787; } pre.term .w { color: #ffd166; } pre.term .r { color: #ff7b72; } pre.term .d { color: #8b93a7; }
+table { border-collapse: collapse; width: 100%; font-size: 7.8pt; line-height: 1.15; break-inside: avoid; margin: 4pt 0 8pt; }
+table caption { font-size: 8pt; font-variant: small-caps; text-align: center; margin-bottom: 3pt; line-height: 1.25; }
+th, td { border-top: .6pt solid #000; border-bottom: .6pt solid #000; padding: 2pt 3pt; text-align: left; vertical-align: top; }
+th { font-weight: bold; }
+.wide-table { column-span: all; }
+.alta { font-weight: bold; }
+.refs { font-size: 8pt; line-height: 1.2; text-align: left; }
+.refs ol { padding-left: 2.2em; margin: 0; }
+.refs li { margin-bottom: 2pt; break-inside: avoid; }
+svg text { font-family: "Times New Roman", serif; }
+</style>
+</head>
+<body>
+
+<h1 class="title">Enumeración de recursos web con Gobuster en un servidor vulnerable (Metasploitable&nbsp;2)</h1>
+<div class="authors">
+  <span class="name">Andrés Felipe Céspedes Rondón</span><br>
+  Ciberseguridad 2026 G01 — Ciencias de la Computación e Inteligencia Artificial<br>
+  Universidad Sergio Arboleda, Bogotá, Colombia<br>
+  Docente: MSc. Iván Darío Méndez Aguilera — Octubre de 2026
+</div>
+
+<div class="cols">
+
+<p class="abstract"><i>Resumen</i>—Este informe documenta el taller de enumeración web con Gobuster, una herramienta de la fase de escaneo y enumeración del hacking ético. Se montó un laboratorio con una máquina atacante Kali Linux, ejecutada como contenedor oficial de Docker, y un servidor Metasploitable&nbsp;2 en VMware Workstation conectado únicamente a una red solo-anfitrión. Tras verificar la herramienta (versión 3.8.2) e instalar las listas de SecLists, el modo <i>dir</i> sobre <code>http://192.168.18.128</code> con <i>common.txt</i> (4&nbsp;749 entradas) encontró 13 recursos, entre ellos el panel <i>/phpMyAdmin</i>, la página <i>/phpinfo.php</i> que revela PHP 5.2.4, el wiki <i>/twiki</i> y el directorio WebDAV <i>/dav</i>. También se usaron el modo <i>dir</i> con extensiones y los modos <i>dns</i>, <i>vhost</i> y <i>fuzz</i>, y los hallazgos se contrastaron con un escaneo de servicios con Nmap. Se interpretan los códigos HTTP obtenidos, se priorizan los hallazgos por riesgo y se proponen contramedidas para el equipo defensor.</p>
+
+<p class="keywords"><i>Palabras clave</i>—Gobuster, enumeración web, hacking ético, Kali Linux, Metasploitable 2, SecLists, Nmap, códigos de estado HTTP.</p>
+
+<h2>I. Introducción</h2>
+<p>El hacking ético aplica las mismas técnicas que un atacante, pero con autorización del dueño del sistema y con el propósito de reportar las debilidades antes de que alguien las aproveche. Su metodología se suele dividir en cinco fases: reconocimiento, escaneo y enumeración, obtención de acceso, mantenimiento del acceso y borrado de huellas [1], [12]. Este taller se ubica en la segunda.</p>
+<p>Un servidor web casi siempre publica más de lo que muestra su página de inicio: paneles de administración, archivos de diagnóstico, carpetas de pruebas o aplicaciones que alguien instaló y olvidó. Como no están enlazados, un navegador normal no los ve. Gobuster [2] los encuentra por fuerza bruta: toma cada palabra de un diccionario, construye una URL con ella y clasifica la respuesta del servidor según su código HTTP.</p>
+<p>El objetivo del taller fue enumerar los recursos del servidor web de Metasploitable&nbsp;2 [4] desde Kali Linux, interpretar los códigos de respuesta y priorizar los hallazgos. Todas las pruebas activas se hicieron sobre máquinas propias dentro de un laboratorio aislado.</p>
+
+<h2>II. Marco teórico</h2>
+<h3>A. Gobuster y sus modos</h3>
+<p>Gobuster es un programa de línea de comandos escrito en Go que lanza las peticiones en paralelo (10 hilos por defecto), lo que lo hace rápido pero también ruidoso: deja miles de entradas en los registros del servidor en pocos segundos. Sus modos principales son:</p>
+<ul>
+  <li><b>dir</b>: descubre directorios y archivos probando rutas.</li>
+  <li><b>dns</b>: busca subdominios resolviendo nombres candidatos.</li>
+  <li><b>vhost</b>: busca sitios virtuales cambiando la cabecera <code>Host</code>.</li>
+  <li><b>fuzz</b>: sustituye la palabra <code>FUZZ</code> en cualquier parte de la URL, las cabeceras o el cuerpo.</li>
+  <li><b>tftp</b>, <b>s3</b> y <b>gcs</b>: archivos en servidores TFTP y buckets de AWS o Google Cloud.</li>
+</ul>
+<h3>B. Diccionarios</h3>
+<p>El resultado depende por completo del diccionario: Gobuster solo encuentra lo que está en la lista. SecLists [3] es la colección de referencia. Su archivo <i>common.txt</i> (unas 4&nbsp;700 rutas) sirve para un primer barrido rápido; listas como <i>directory-list-2.3-medium.txt</i> (unas 220&nbsp;000) dan más cobertura a cambio de tiempo y de mucho más tráfico.</p>
+<h3>C. Códigos de estado HTTP</h3>
+<p>La semántica de los códigos está definida en el RFC 9110 [8]. Para la enumeración lo importante es que no solo el 200 indica que algo existe: un 301 confirma un directorio, y un 403 indica que el recurso está ahí aunque el servidor niegue el acceso. Solo el 404 significa ausencia, y por eso Gobuster lo filtra por defecto.</p>
+
+<h2>III. Entorno de laboratorio</h2>
+<div class="keep"><table>
+<caption>Tabla I<br>Componentes del laboratorio</caption>
+<tr><th style="width:27%">Elemento</th><th>Detalle</th></tr>
+<tr><td>Host físico</td><td>Portátil del estudiante con Windows 11, VMware Workstation y Docker Desktop 29.5</td></tr>
+<tr><td>Atacante</td><td>Kali Linux <i>rolling</i>, contenedor oficial <code>kalilinux/kali-rolling</code> [10]; IP 172.17.0.2/16</td></tr>
+<tr><td>Objetivo</td><td>Metasploitable 2 (Ubuntu 8.04) en VMware, 512 MB de RAM; IP 192.168.18.128/24</td></tr>
+<tr><td>Red del objetivo</td><td>VMnet1, solo-anfitrión, 192.168.18.0/24 (el host es .1); sin NAT ni salida a Internet</td></tr>
+<tr><td>Herramientas</td><td>gobuster 3.8.2, SecLists 2025.3, Nmap 7.99, curl</td></tr>
+</table></div>
+<p>La guía del docente propone dos máquinas virtuales en la misma red interna. Por tiempo se usó una variante equivalente. Metasploitable sigue aislado: en su archivo <code>.vmx</code> la interfaz NAT se cambió a solo-anfitrión y se deshabilitó la segunda interfaz, así que su única red es VMnet1. Kali, en cambio, corre como contenedor en el mismo portátil. El contenedor no tiene una interfaz propia en VMnet1: sus paquetes salen por el puente de Docker (172.17.0.1) y el host los enruta hacia VMnet1 (Fig. 2). Ese salto adicional explica que las respuestas lleguen con TTL 63 y no 64 (Fig. 3). El contenedor sí tiene salida a Internet, porque la necesitó para instalar las herramientas con <code>apt</code>.</p>
+
+<figure>
+<svg viewBox="0 0 340 142" width="100%" xmlns="http://www.w3.org/2000/svg" font-size="8.5">
+  <rect x="2" y="2" width="336" height="138" rx="6" fill="#f5f7fb" stroke="#5a6b8c" stroke-dasharray="4 3"/>
+  <text x="10" y="14" font-size="8" fill="#334">Host Windows 11 (portátil)</text>
+  <rect x="12" y="26" width="110" height="52" rx="5" fill="#fff" stroke="#27548a"/>
+  <text x="67" y="40" text-anchor="middle" font-weight="bold">Docker Desktop</text>
+  <rect x="22" y="46" width="90" height="26" rx="4" fill="#e6f0ff" stroke="#27548a"/>
+  <text x="67" y="57" text-anchor="middle">Kali (contenedor)</text>
+  <text x="67" y="67" text-anchor="middle" font-size="7.5">172.17.0.2</text>
+  <rect x="140" y="38" width="62" height="28" rx="5" fill="#fff" stroke="#555"/>
+  <text x="171" y="50" text-anchor="middle">Enrutamiento</text>
+  <text x="171" y="60" text-anchor="middle">del host</text>
+  <rect x="220" y="26" width="108" height="52" rx="5" fill="#fff" stroke="#8a2727"/>
+  <text x="274" y="40" text-anchor="middle" font-weight="bold">VMware · VMnet1</text>
+  <rect x="230" y="46" width="88" height="26" rx="4" fill="#ffe9e6" stroke="#8a2727"/>
+  <text x="274" y="57" text-anchor="middle">Metasploitable 2</text>
+  <text x="274" y="67" text-anchor="middle" font-size="7.5">192.168.18.128</text>
+  <line x1="122" y1="52" x2="140" y2="52" stroke="#333" marker-end="url(#a)"/>
+  <line x1="202" y1="52" x2="220" y2="52" stroke="#333" marker-end="url(#a)"/>
+  <defs><marker id="a" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 z" fill="#333"/></marker></defs>
+  <text x="131" y="47" text-anchor="middle" font-size="7">.17.0.1</text>
+  <text x="211" y="47" text-anchor="middle" font-size="7">.18.1</text>
+  <text x="67" y="96" text-anchor="middle" font-size="7.5" fill="#27548a">Con salida a Internet (apt)</text>
+  <text x="274" y="96" text-anchor="middle" font-size="7.5" fill="#8a2727">Solo-anfitrión: sin Internet</text>
+  <text x="170" y="116" text-anchor="middle" font-size="7.5">Tráfico de prueba: Kali → host → VMnet1 → Metasploitable (HTTP 80, ICMP, Nmap)</text>
+  <text x="170" y="128" text-anchor="middle" font-size="7.5">Metasploitable no tiene ruta hacia Internet: su única red es VMnet1</text>
+</svg>
+<figcaption>Fig. 1. Topología del laboratorio. El objetivo solo es alcanzable desde el host.</figcaption>
+</figure>
+
+<figure>
+<pre class="term"><span class="p1">┌──(root㉿kali)-[~]</span>
+<span class="p2">└─#</span> <span class="c">ip -4 -br addr; ip route; ip route get 192.168.18.128</span>
+lo               UNKNOWN        127.0.0.1/8
+eth0@if7         UP             <span class="ok">172.17.0.2/16</span>
+default via 172.17.0.1 dev eth0
+172.17.0.0/16 dev eth0 proto kernel scope link src 172.17.0.2
+<span class="w">192.168.18.128 via 172.17.0.1 dev eth0 src 172.17.0.2</span></pre>
+<figcaption>Fig. 2. Direccionamiento de Kali y ruta hacia el objetivo: sale por el puente de Docker y el host la entrega en VMnet1.</figcaption>
+</figure>
+
+<h2>IV. Desarrollo del taller</h2>
+<h3>A. Paso 1: identificación del objetivo y conectividad</h3>
+<p>Metasploitable obtiene su dirección por el DHCP de VMware. Como la máquina corre sin interfaz gráfica, en lugar de ejecutar <code>ifconfig</code> en su consola la dirección se tomó de la tabla ARP del adaptador VMnet1 del host: 192.168.18.128, con prefijo MAC 00:0c:29, que es el de VMware. Para confirmar que era la máquina correcta se pidió su página principal con <code>curl</code>, y la respuesta trae el título <i>Metasploitable2 - Linux</i>. El <code>ping</code> respondió a los 4 paquetes con unos 2&nbsp;ms de latencia (Fig. 3).</p>
+
+<figure>
+<pre class="term"><span class="p1">┌──(root㉿kali)-[~]</span>
+<span class="p2">└─#</span> <span class="c">ping -c 4 192.168.18.128</span>
+64 bytes from 192.168.18.128: icmp_seq=1 ttl=63 time=1.51 ms
+64 bytes from 192.168.18.128: icmp_seq=2 ttl=63 time=1.46 ms
+64 bytes from 192.168.18.128: icmp_seq=3 ttl=63 time=2.54 ms
+64 bytes from 192.168.18.128: icmp_seq=4 ttl=63 time=1.83 ms
+<span class="ok">4 packets transmitted, 4 received, 0% packet loss</span>
+<span class="p1">┌──(root㉿kali)-[~]</span>
+<span class="p2">└─#</span> <span class="c">curl -s http://192.168.18.128/ | head -16</span>
+&lt;html&gt;&lt;head&gt;&lt;title&gt;<span class="w">Metasploitable2 - Linux</span>&lt;/title&gt;&lt;/head&gt;
+ ...
+Warning: Never expose this VM to an untrusted network!
+Login with msfadmin/msfadmin to get started</pre>
+<figcaption>Fig. 3. Conectividad con el objetivo y verificación de su identidad por el título de la página web.</figcaption>
+</figure>
+
+<h3>B. Paso 2: verificación de Gobuster</h3>
+<p>Con <code>gobuster -h</code> se comprobó que la herramienta está instalada. La salida muestra la versión 3.8.2 y los siete modos disponibles (Fig. 4).</p>
+<figure>
+<pre class="term"><span class="p1">┌──(root㉿kali)-[~]</span>
+<span class="p2">└─#</span> <span class="c">gobuster -h</span>
+NAME:     gobuster - the tool you love
+VERSION:  <span class="ok">3.8.2</span>
+COMMANDS:
+   dir      Uses directory/file enumeration mode
+   vhost    Uses VHOST enumeration mode
+   dns      Uses DNS subdomain enumeration mode
+   fuzz     Uses fuzzing mode. Replaces the keyword FUZZ ...
+   tftp     Uses TFTP enumeration mode
+   s3       Uses aws bucket enumeration mode
+   gcs      Uses gcs bucket enumeration mode</pre>
+<figcaption>Fig. 4. Ayuda de Gobuster (salida resumida): versión y modos de operación.</figcaption>
+</figure>
+
+<h3>C. Paso 3: diccionarios (SecLists)</h3>
+<p>La guía propone clonar el repositorio de SecLists con <code>git</code>. En Kali el mismo contenido viene empaquetado, así que se instaló con <code>apt install seclists</code>, que deja las listas en <code>/usr/share/seclists/</code>. El archivo usado, <i>Discovery/Web-Content/common.txt</i>, tiene 4&nbsp;749 líneas (Fig. 5).</p>
+<figure>
+<pre class="term"><span class="p1">┌──(root㉿kali)-[~]</span>
+<span class="p2">└─#</span> <span class="c">ls -lh /usr/share/seclists/Discovery/Web-Content/common.txt &amp;&amp; wc -l ...</span>
+-rw-r--r-- 1 root root 38K Sep 19  2025 /usr/share/seclists/Discovery/Web-Content/common.txt
+<span class="ok">4749</span> /usr/share/seclists/Discovery/Web-Content/common.txt</pre>
+<figcaption>Fig. 5. Diccionario <i>common.txt</i> de SecLists (versión 2025.3).</figcaption>
+</figure>
+
+<h3>D. Paso 4: escaneo en modo dir</h3>
+<p>El paso central fue el barrido de directorios. Se agregó <code>-o resultados.txt</code> para que los hallazgos quedaran en un archivo y <code>--np</code> para omitir la barra de progreso en la evidencia:</p>
+<p class="ni"><code>gobuster dir -u http://192.168.18.128 -w /usr/share/seclists/Discovery/Web-Content/common.txt -o resultados.txt --np</code></p>
+<p>Las partes del comando son: <code>dir</code>, el modo de enumeración de directorios; <code>-u</code>, la URL del objetivo; <code>-w</code>, el diccionario; y <code>-o</code>, el archivo de salida. Se dejaron los valores por defecto de 10 hilos, método GET, filtro del código 404 y agente de usuario <code>gobuster/3.8.2</code>. Gobuster recorrió las 4&nbsp;749 palabras y reportó 13 recursos (Fig. 6).</p>
+
+<figure class="wide">
+<pre class="term"><span class="p1">┌──(root㉿kali)-[~]</span>
+<span class="p2">└─#</span> <span class="c">gobuster dir -u http://192.168.18.128 -w /usr/share/seclists/Discovery/Web-Content/common.txt -o resultados.txt --np</span>
+<span class="d">===============================================================
+Gobuster v3.8.2
+by OJ Reeves (@TheColonial) &amp; Christian Mehlmauer (@firefart)
+===============================================================</span>
+[+] Url:                     http://192.168.18.128
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/seclists/Discovery/Web-Content/common.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.8.2
+[+] Timeout:                 10s
+<span class="d">===============================================================</span>
+Starting gobuster in directory enumeration mode
+<span class="d">===============================================================</span>
+<span class="r">.hta                 (Status: 403) [Size: 291]
+.htpasswd            (Status: 403) [Size: 296]
+.htaccess            (Status: 403) [Size: 296]
+cgi-bin/             (Status: 403) [Size: 295]</span>
+<span class="w">dav                  (Status: 301) [Size: 319] [--&gt; http://192.168.18.128/dav/]</span>
+<span class="ok">index.php            (Status: 200) [Size: 891]
+index                (Status: 200) [Size: 891]</span>
+<span class="w">phpMyAdmin           (Status: 301) [Size: 326] [--&gt; http://192.168.18.128/phpMyAdmin/]</span>
+<span class="ok">phpinfo              (Status: 200) [Size: 48008]
+phpinfo.php          (Status: 200) [Size: 48020]</span>
+<span class="w">test                 (Status: 301) [Size: 320] [--&gt; http://192.168.18.128/test/]
+twiki                (Status: 301) [Size: 321] [--&gt; http://192.168.18.128/twiki/]</span>
+<span class="r">server-status        (Status: 403) [Size: 300]</span>
+<span class="d">===============================================================</span>
+Finished</pre>
+<figcaption>Fig. 6. Ejecución de Gobuster en modo <i>dir</i> contra Metasploitable 2: 13 recursos (verde 200, amarillo 301, rojo 403). La misma lista quedó en <i>resultados.txt</i>.</figcaption>
+</figure>
+
+<h3>E. Paso 5: análisis de resultados</h3>
+<p>La Tabla II resume lo encontrado y la Tabla III resume cómo se interpreta cada código. Los recursos con 301 se siguieron a mano con <code>curl</code> para ver qué hay detrás de la redirección (Fig. 7).</p>
+
+<table class="wide-table">
+<caption>Tabla II<br>Recursos encontrados en 192.168.18.128 y prioridad para el auditor</caption>
+<tr><th style="width:15%">Recurso</th><th style="width:7%">Código</th><th style="width:8%">Tamaño</th><th>Qué es y por qué importa</th><th style="width:8%">Prioridad</th></tr>
+<tr><td>/phpMyAdmin</td><td>301 → 200</td><td>326 B</td><td>Panel web de administración de MySQL. Si acepta credenciales débiles da acceso directo a las bases de datos.</td><td class="alta">Alta</td></tr>
+<tr><td>/phpinfo.php, /phpinfo</td><td>200</td><td>48 KB</td><td>Página de diagnóstico de PHP. Revela la versión <b>5.2.4-2ubuntu5.10</b>, rutas internas, módulos y variables de entorno, que sirven para buscar CVE.</td><td class="alta">Alta</td></tr>
+<tr><td>/dav</td><td>301 → 200</td><td>319 B</td><td>Directorio WebDAV (Apache <i>DAV/2</i>) con listado de archivos. Si permite el método PUT, un atacante podría subir archivos al servidor.</td><td class="alta">Alta</td></tr>
+<tr><td>/twiki</td><td>301 → 200</td><td>321 B</td><td>Instalación de TWiki, un software de wiki antiguo con fallas públicas conocidas.</td><td>Media</td></tr>
+<tr><td>/test</td><td>301</td><td>320 B</td><td>Carpeta de pruebas expuesta. Suele contener archivos olvidados o un listado de directorio.</td><td>Media</td></tr>
+<tr><td>/index.php, /index</td><td>200</td><td>891 B</td><td>Página principal, con enlaces a las aplicaciones del laboratorio y las credenciales por defecto.</td><td>Baja</td></tr>
+<tr><td>/.hta, /.htaccess, /.htpasswd</td><td>403</td><td>291–296 B</td><td>Archivos de configuración de Apache protegidos. Su existencia confirma un Apache con la configuración por defecto.</td><td>Baja</td></tr>
+<tr><td>/cgi-bin/</td><td>403</td><td>295 B</td><td>Directorio de scripts CGI. Está bloqueado, pero conviene enumerar su contenido.</td><td>Baja</td></tr>
+<tr><td>/server-status</td><td>403</td><td>300 B</td><td>Estado interno de Apache (<i>mod_status</i>), restringido. Si se abriera, mostraría las peticiones en curso.</td><td>Baja</td></tr>
+</table>
+
+<div class="keep"><table>
+<caption>Tabla III<br>Interpretación de los códigos HTTP observados</caption>
+<tr><th style="width:12%">Código</th><th>Significado</th><th style="width:38%">Acción del auditor</th></tr>
+<tr><td>200 OK</td><td>El recurso existe y se entrega sin restricción.</td><td>Revisarlo primero: es acceso directo.</td></tr>
+<tr><td>301 Moved</td><td>Existe y redirige, casi siempre de <i>/ruta</i> a <i>/ruta/</i>.</td><td>Seguir la redirección y ver el contenido real.</td></tr>
+<tr><td>302 Found</td><td>Redirección temporal; en aplicaciones suele llevar al login.</td><td>Hay una aplicación detrás; buscar su autenticación.</td></tr>
+<tr><td>403 Forbidden</td><td>Existe, pero el servidor niega el acceso.</td><td>No descartarlo; anotarlo y probar más tarde con otros métodos.</td></tr>
+<tr><td>404 Not Found</td><td>No existe. Gobuster lo oculta por defecto (<code>-b 404</code>).</td><td>Ninguna; es ruido.</td></tr>
+</table></div>
+
+<figure>
+<pre class="term"><span class="p1">┌──(root㉿kali)-[~]</span>
+<span class="p2">└─#</span> <span class="c">for r in phpMyAdmin/ dvwa/ mutillidae/ twiki/ phpinfo.php dav/ server-status; do ... curl ...; done</span>
+phpMyAdmin/    <span class="ok">200</span>  4145 bytes
+dvwa/          <span class="w">302</span>  0 bytes
+mutillidae/    <span class="ok">200</span>  24198 bytes
+twiki/         <span class="ok">200</span>  782 bytes
+phpinfo.php    <span class="ok">200</span>  47981 bytes
+dav/           <span class="ok">200</span>  695 bytes
+server-status  <span class="r">403</span>  300 bytes
+<span class="w">PHP Version 5.2.4-2ubuntu5.10</span></pre>
+<figcaption>Fig. 7. Verificación manual de los hallazgos y de dos aplicaciones que <i>common.txt</i> no contiene (<i>/dvwa</i> y <i>/mutillidae</i>).</figcaption>
+</figure>
+
+<p>Un resultado importante es lo que <b>no</b> apareció. Metasploitable publica DVWA y Mutillidae, dos aplicaciones vulnerables a propósito, pero las palabras <i>dvwa</i> y <i>mutillidae</i> no están en <i>common.txt</i> y por eso Gobuster no las reportó. Con <code>curl</code> se comprobó que existen: <i>/dvwa/</i> responde 302 hacia su login y <i>/mutillidae/</i> responde 200. Esto confirma que la herramienta no puede encontrar lo que no está en el diccionario, y que un barrido rápido debe complementarse con listas más grandes o con la información de la propia página principal.</p>
+<p>Los cuatro 403 de los archivos <i>.ht*</i>, <i>cgi-bin</i> y <i>server-status</i> tienen tamaños casi iguales (291 a 300 bytes). La pequeña diferencia viene de que la página de error de Apache repite la ruta pedida. Ese patrón deja ver que es una única plantilla de error de Apache, sin un WAF ni páginas personalizadas.</p>
+
+<h3>F. Paso 6: modos avanzados</h3>
+<p><b>dir con extensiones.</b> Con <code>-x php,txt,html -t 20</code> Gobuster prueba cada palabra cuatro veces (sin extensión y con las tres extensiones), unas 19&nbsp;000 peticiones en total. No aparecieron recursos nuevos: solo variantes de los <i>.ht*</i> con 403 y repeticiones de <i>index.php</i> y <i>phpinfo.php</i>. El costo en tráfico se multiplicó sin ganar información.</p>
+<p><b>dns.</b> Metasploitable no tiene un dominio público, así que este modo se probó contra <i>vulnweb.com</i>, el dominio que Acunetix/Invicti publica con sitios de prueba vulnerables a propósito [11]. El modo solo hace consultas DNS a un resolver público y no envía tráfico a los servidores del dominio. Con la lista <i>subdomains-top1million-5000.txt</i> encontró <i>www</i> y <i>rest</i>, con sus IP en AWS, y <i>localhost.vulnweb.com</i>, un registro que apunta a 127.0.0.1 (Fig. 8). Una primera corrida con 30 hilos produjo cientos de <i>timeouts</i> porque el resolver limitó la tasa de consultas. Con 4 hilos y un tiempo de espera de 5&nbsp;s, aún expiraron 343 de las 5&nbsp;000 consultas (7&nbsp;%), así que el resultado puede no ser completo.</p>
+<figure>
+<pre class="term"><span class="p1">┌──(root㉿kali)-[~]</span>
+<span class="p2">└─#</span> <span class="c">gobuster dns --domain vulnweb.com -w .../DNS/subdomains-top1million-5000.txt --resolver 1.1.1.1:53 --timeout 5s -t 4 --np</span>
+[+] Domain:     vulnweb.com
+[+] Threads:    4
+[+] Resolver:   1.1.1.1:53
+[+] Timeout:    5s
+Starting gobuster in DNS enumeration mode
+<span class="ok">localhost.vulnweb.com 127.0.0.1
+www.vulnweb.com 44.228.249.3
+rest.vulnweb.com 18.215.71.186</span>
+Finished</pre>
+<figcaption>Fig. 8. Modo <i>dns</i> sobre el dominio de pruebas <i>vulnweb.com</i> (los errores de <i>timeout</i> se omitieron de la captura).</figcaption>
+</figure>
+<p><b>vhost.</b> Este modo envía la misma petición cambiando la cabecera <code>Host</code> (por ejemplo, <i>admin.metasploitable.local</i>) y compara las respuestas. Como Metasploitable devuelve su página principal de 891 bytes para cualquier nombre, ese tamaño se excluyó con <code>--exclude-length 891</code>. No quedó ningún resultado (Fig. 9): el servidor no aloja sitios virtuales por nombre.</p>
+<figure>
+<pre class="term"><span class="p1">┌──(root㉿kali)-[~]</span>
+<span class="p2">└─#</span> <span class="c">gobuster vhost -u http://192.168.18.128 -w .../subdomains-top1million-5000.txt --append-domain --domain metasploitable.local --exclude-length 891 -t 30 --np</span>
+[+] Append Domain:             true
+[+] Exclude Length:            891
+Starting gobuster in VHOST enumeration mode
+<span class="d">===============================================================</span>
+Finished                       <span class="w">(0 virtual hosts)</span></pre>
+<figcaption>Fig. 9. Modo <i>vhost</i>: ningún sitio virtual distinto de la página por defecto.</figcaption>
+</figure>
+<p><b>fuzz.</b> Con <code>-u http://192.168.18.128/FUZZ</code> el resultado equivale al modo <i>dir</i>, pero con el formato de salida del modo <i>fuzz</i> (código, longitud, palabra y URL). Aparecieron 12 de los 13 recursos; <i>server-status</i> no salió porque esa petición expiró en esta corrida. La ventaja del modo es que la palabra <code>FUZZ</code> puede ir en un parámetro, por ejemplo <code>?page=FUZZ</code>, o en una cabecera.</p>
+<figure>
+<pre class="term"><span class="p1">┌──(root㉿kali)-[~]</span>
+<span class="p2">└─#</span> <span class="c">gobuster fuzz -u http://192.168.18.128/FUZZ -w .../common.txt -b 404 -t 20 --np</span>
+[Status=403] [Length=291] [Word=.hta] http://192.168.18.128/.hta
+[Status=301] [Length=319] [Word=dav] http://192.168.18.128/dav
+<span class="ok">[Status=200] [Length=48020] [Word=phpinfo.php] http://.../phpinfo.php</span>
+[Status=301] [Length=326] [Word=phpMyAdmin] http://.../phpMyAdmin
+[Status=301] [Length=321] [Word=twiki] http://192.168.18.128/twiki
+ ... (12 resultados)
+<span class="r">[ERROR] error on word server-status: timeout occurred</span></pre>
+<figcaption>Fig. 10. Modo <i>fuzz</i> (salida resumida).</figcaption>
+</figure>
+
+<h3>G. Contexto: escaneo de servicios con Nmap</h3>
+<p>Para ubicar el servidor web dentro del resto de la máquina se escanearon con Nmap [6] los puertos conocidos de Metasploitable, con detección de versiones (<code>-sV</code>). Se usó una conexión TCP completa (<code>-sT</code>) porque, desde el contenedor, el escaneo SYN no es confiable a través del NAT de Docker. Los 24 puertos probados estaban abiertos (Fig. 11). Para este taller interesa que el puerto 80 corre <b>Apache 2.2.8 con DAV/2</b>, coherente con el directorio <i>/dav</i>, y que hay otros dos servicios web que también podrían enumerarse: 8180 (Tomcat) y 8009 (AJP).</p>
+
+<figure class="wide">
+<pre class="term"><span class="p1">┌──(root㉿kali)-[~]</span>
+<span class="p2">└─#</span> <span class="c">nmap -Pn -sT -sV --version-light -n -p 21,22,23,25,53,80,111,139,445,512,513,514,1099,1524,2049,2121,3306,3632,5432,5900,6000,6667,8009,8180 192.168.18.128</span>
+PORT     STATE SERVICE      VERSION                              PORT     STATE SERVICE      VERSION
+21/tcp   open  ftp          vsftpd 2.3.4                         1099/tcp open  java-rmi     GNU Classpath grmiregistry
+22/tcp   open  ssh          OpenSSH 4.7p1 Debian 8ubuntu1        1524/tcp open  <span class="r">bindshell    Metasploitable root shell</span>
+23/tcp   open  telnet       Linux telnetd                        2049/tcp open  rpcbind
+25/tcp   open  smtp         Postfix smtpd                        2121/tcp open  ccproxy-ftp?
+53/tcp   open  domain       ISC BIND 9.4.2                       3306/tcp open  mysql?
+<span class="w">80/tcp   open  http         Apache httpd 2.2.8 ((Ubuntu) DAV/2)</span>  3632/tcp open  distccd      distccd v1 ((GNU) 4.2.4)
+111/tcp  open  rpcbind                                           5432/tcp open  postgresql   PostgreSQL DB 8.3.0 - 8.3.7
+139/tcp  open  netbios-ssn  Samba smbd 3.X - 4.X                 5900/tcp open  vnc          VNC (protocol 3.3)
+445/tcp  open  netbios-ssn  Samba smbd 3.X - 4.X                 6000/tcp open  X11          (access denied)
+512/tcp  open  exec         netkit-rsh rexecd                    6667/tcp open  irc          UnrealIRCd
+513/tcp  open  login?                                            <span class="w">8009/tcp open  ajp13        Apache Jserv (Protocol v1.3)</span>
+514/tcp  open  shell        Netkit rshd                          <span class="w">8180/tcp open  unknown</span>
+Nmap done: 1 IP address (1 host up) scanned in 26.45 seconds</pre>
+<figcaption>Fig. 11. Servicios de Metasploitable 2 según Nmap (dos columnas para ahorrar espacio). En amarillo, los servicios web.</figcaption>
+</figure>
+
+<h2>V. Discusión</h2>
+<p>Lo que pesa en el análisis es la combinación de hallazgos, más que cada uno por separado. <i>/phpinfo.php</i> entrega gratis la versión exacta de PHP (5.2.4, sin soporte desde 2011), y Nmap la de Apache (2.2.8, sin soporte desde 2017). Con esos dos datos un atacante puede buscar directamente los CVE que les aplican. <i>/phpMyAdmin</i> expone la administración de la base de datos a cualquiera que llegue al puerto 80, y <i>/dav</i> agrega la posibilidad de escribir en el servidor si WebDAV acepta PUT. Esa vía es conocida en Metasploitable [5], pero no se probó porque la explotación está fuera del alcance de este taller. En un servidor de producción cualquiera de estos tres hallazgos se reportaría como de riesgo alto.</p>
+<p>El taller también mostró los límites de la herramienta: depende del diccionario (DVWA y Mutillidae), las peticiones que expiran dan falsos negativos (<i>fuzz</i> y <i>dns</i>), opciones como <code>-x</code> multiplican el ruido y su agente <code>gobuster/3.8.2</code> queda en cada línea del <i>access.log</i>.</p>
+
+<h2>VI. Buenas prácticas y mitigación</h2>
+<p>Desde el punto de vista del defensor, y siguiendo la guía de pruebas de OWASP [9] (pruebas WSTG-CONF-04 y WSTG-CONF-05), se recomienda:</p>
+<ul>
+  <li><b>Retirar lo que no debe estar publicado:</b> borrar <i>phpinfo.php</i> y las carpetas de prueba (<i>/test</i>) y desactivar WebDAV si no se usa.</li>
+  <li><b>Restringir las consolas de administración:</b> phpMyAdmin solo desde la red de gestión o por VPN, con contraseñas fuertes y MFA.</li>
+  <li><b>Endurecer Apache:</b> <code>Options -Indexes</code> para no listar directorios, <code>ServerTokens Prod</code> y <code>ServerSignature Off</code> para no anunciar versiones, y mantener <i>server-status</i> limitado a localhost.</li>
+  <li><b>Actualizar:</b> Apache 2.2 y PHP 5.2 no reciben parches desde hace años.</li>
+  <li><b>Detectar y frenar barridos:</b> alertar ante ráfagas de 404 desde una misma IP o con agentes como <i>gobuster</i>, y aplicar límites de tasa o un WAF.</li>
+  <li><b>Inventariar periódicamente</b> la superficie expuesta con las mismas herramientas, antes de que lo haga un tercero.</li>
+</ul>
+
+<h2>VII. Conclusiones</h2>
+<ul>
+  <li>Gobuster encontró en segundos recursos que no están enlazados en la página principal. Tres de ellos (<i>/phpMyAdmin</i>, <i>/phpinfo.php</i> y <i>/dav</i>) serían hallazgos de riesgo alto en un sistema real.</li>
+  <li>Los códigos 301 y 403 también son información: confirman que el recurso existe. Solo el 404 es ruido.</li>
+  <li>El resultado es tan bueno como el diccionario. DVWA y Mutillidae existían y no aparecieron porque no estaban en <i>common.txt</i>.</li>
+  <li>Correlacionar con Nmap y con <i>phpinfo</i> convierte una lista de rutas en un mapa de versiones y posibles vulnerabilidades, que es la entrada de la siguiente fase de la auditoría.</li>
+  <li>El laboratorio propio y aislado fue indispensable: contra un sistema ajeno, este escaneo sería un ataque.</li>
+</ul>
+
+<h2>Referencias</h2>
+<div class="refs"><ol>
+<li>Academia Seguridad Cero, “Las 5 fases del hacking ético.” [En línea]. Disponible: https://academy.seguridadcero.com.pe</li>
+<li>OJ Reeves y C. Mehlmauer, “Gobuster: directory/file, DNS and VHost busting tool written in Go,” GitHub. [En línea]. Disponible: https://github.com/OJ/gobuster</li>
+<li>D. Miessler, J. Haddix y g0tmi1k, “SecLists,” GitHub. [En línea]. Disponible: https://github.com/danielmiessler/SecLists</li>
+<li>Rapid7, “Metasploitable 2,” SourceForge. [En línea]. Disponible: https://sourceforge.net/projects/metasploitable/</li>
+<li>Rapid7, “Metasploitable 2 exploitability guide.” [En línea]. Disponible: https://docs.rapid7.com/metasploit/metasploitable-2-exploitability-guide/</li>
+<li>G. Lyon, “Nmap reference guide.” [En línea]. Disponible: https://nmap.org/book/man.html</li>
+<li>HackerTarget, “Gobuster tutorial.” [En línea]. Disponible: https://hackertarget.com/gobuster-tutorial/</li>
+<li>R. Fielding, M. Nottingham y J. Reschke, “HTTP semantics,” RFC 9110, IETF, jun. 2022.</li>
+<li>OWASP, “Web Security Testing Guide v4.2.” [En línea]. Disponible: https://owasp.org/www-project-web-security-testing-guide/</li>
+<li>Kali Linux, “Official Kali Linux Docker images.” [En línea]. Disponible: https://www.kali.org/docs/containers/official-kalilinux-docker-images/</li>
+<li>Acunetix, “Vulnerable test websites for Acunetix Web Vulnerability Scanner.” [En línea]. Disponible: http://vulnweb.com/</li>
+<li>I. D. Méndez Aguilera, “Fases del hacking ético y evaluación de seguridad en servidores,” presentación de clase, Universidad Sergio Arboleda, 2026.</li>
+</ol></div>
+
+</div>
+</body>
+</html>

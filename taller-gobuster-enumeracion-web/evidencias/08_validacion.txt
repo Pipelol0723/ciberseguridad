@@ -1,0 +1,10 @@
+┌──(root㉿kali)-[~]
+└─# for r in phpMyAdmin/ dvwa/ mutillidae/ twiki/ phpinfo.php dav/ server-status; do printf '%-14s ' $r; curl -s -o /dev/null -w '%{http_code}  %{size_download} bytes\n' http://192.168.18.128/$r; done; curl -s http://192.168.18.128/phpinfo.php | grep -o 'PHP Version [0-9.a-z-]*' | head -1
+phpMyAdmin/    200  4145 bytes
+dvwa/          302  0 bytes
+mutillidae/    200  24198 bytes
+twiki/         200  782 bytes
+phpinfo.php    200  47981 bytes
+dav/           200  695 bytes
+server-status  403  300 bytes
+PHP Version 5.2.4-2ubuntu5.10

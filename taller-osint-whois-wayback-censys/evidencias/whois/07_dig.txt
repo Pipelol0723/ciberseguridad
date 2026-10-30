@@ -1,0 +1,13 @@
+┌──(root㉿kali)-[~]
+└─# dig +short vulnweb.com A; dig +short vulnweb.com NS; dig +short testphp.vulnweb.com A; dig +short vulnweb.com MX
+44.228.249.3
+ns-1588.awsdns-06.co.uk.
+ns-557.awsdns-05.net.
+ns-136.awsdns-17.com.
+ns-1450.awsdns-53.org.
+44.228.249.3
+10 alt1.aspmx.l.google.com.
+10 alt2.aspmx.l.google.com.
+10 alt3.aspmx.l.google.com.
+10 alt4.aspmx.l.google.com.
+10 aspmx.l.google.com.

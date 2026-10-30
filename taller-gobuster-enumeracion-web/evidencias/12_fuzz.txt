@@ -1,0 +1,32 @@
+┌──(root㉿kali)-[~]
+└─# gobuster fuzz -u http://192.168.18.128/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -b 404 -t 20 --np
+===============================================================
+Gobuster v3.8.2
+by OJ Reeves (@TheColonial) & Christian Mehlmauer (@firefart)
+===============================================================
+[+] Url:                     http://192.168.18.128/FUZZ
+[+] Method:                  GET
+[+] Threads:                 20
+[+] Wordlist:                /usr/share/seclists/Discovery/Web-Content/common.txt
+[+] Excluded Status codes:   404
+[+] User Agent:              gobuster/3.8.2
+[+] Timeout:                 10s
+===============================================================
+Starting gobuster in fuzzing mode
+===============================================================
+[Status=403] [Length=291] [Word=.hta] http://192.168.18.128/.hta
+[Status=403] [Length=296] [Word=.htpasswd] http://192.168.18.128/.htpasswd
+[Status=403] [Length=296] [Word=.htaccess] http://192.168.18.128/.htaccess
+[Status=403] [Length=295] [Word=cgi-bin/] http://192.168.18.128/cgi-bin/
+[Status=301] [Length=319] [Word=dav] http://192.168.18.128/dav [--> http://192.168.18.128/dav/]
+[Status=200] [Length=891] [Word=index] http://192.168.18.128/index
+[Status=200] [Length=891] [Word=index.php] http://192.168.18.128/index.php
+[Status=301] [Length=326] [Word=phpMyAdmin] http://192.168.18.128/phpMyAdmin [--> http://192.168.18.128/phpMyAdmin/]
+[Status=200] [Length=48008] [Word=phpinfo] http://192.168.18.128/phpinfo
+[Status=200] [Length=48020] [Word=phpinfo.php] http://192.168.18.128/phpinfo.php
+[Status=301] [Length=320] [Word=test] http://192.168.18.128/test [--> http://192.168.18.128/test/]
+[Status=301] [Length=321] [Word=twiki] http://192.168.18.128/twiki [--> http://192.168.18.128/twiki/]
+[ERROR] error on word server-status: timeout occurred during the request
+===============================================================
+Finished
+===============================================================
